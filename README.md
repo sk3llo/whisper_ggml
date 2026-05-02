@@ -89,8 +89,16 @@ final result = await controller.transcribe(
     model: model, /// Selected WhisperModel
     audioPath: audioPath, /// Path to .wav file
     lang: 'en', /// Language to transcribe
+    initialPrompt: 'Optional text to bias decoding', /// See note below
 );
 ```
+
+The optional `initialPrompt` is passed to whisper.cpp as
+`whisper_full_params.initial_prompt`. Whisper uses it to bias decoding toward
+the vocabulary, proper nouns, and punctuation it contains — useful for
+domain-specific transcription (medical, legal, product names, etc.) where
+those words otherwise get misrecognised. Leave it `null` (the default) to
+disable biasing.
 
 4. Use the `result` variable to access the transcription result:
 

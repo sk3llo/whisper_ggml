@@ -30,6 +30,7 @@ abstract class TranscribeRequestDto
     @JsonKey(name: 'is_realtime') required bool isRealtime,
     required bool diarize,
     @JsonKey(name: 'speed_up') required bool speedUp,
+    @JsonKey(name: 'initial_prompt') String? initialPrompt,
   }) = _TranscribeRequestDto;
 
   /// Convert [request] to TranscribeRequestDto with specified [modelPath]
@@ -52,6 +53,7 @@ abstract class TranscribeRequestDto
       diarize: request.diarize,
       speedUp: request.speedUp,
       isRealtime: request.isRealtime,
+      initialPrompt: request.initialPrompt,
     );
   }
   const TranscribeRequestDto._();

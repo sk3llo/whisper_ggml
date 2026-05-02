@@ -20,6 +20,17 @@ abstract class TranscribeRequest with _$TranscribeRequest {
     @Default(false) bool diarize,
     @Default(false) bool speedUp,
     @Default(null) Stream<String>? realtimeStream,
+
+    /// Optional text passed to whisper.cpp as `whisper_full_params.initial_prompt`.
+    ///
+    /// Whisper uses this to bias decoding toward vocabulary, names, and
+    /// punctuation that appear in the prompt — useful for domain-specific
+    /// transcription (e.g. medical, legal, scripture, product names) where
+    /// the same words otherwise get misrecognised. Empty / null disables
+    /// biasing (matches whisper.cpp's default of `nullptr`).
+    ///
+    /// See OpenAI's transcription docs for guidance on prompt content.
+    @Default(null) String? initialPrompt,
   }) = _TranscribeRequest;
   const TranscribeRequest._();
 }

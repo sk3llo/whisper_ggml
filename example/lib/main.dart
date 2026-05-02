@@ -44,6 +44,13 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isProcessingFile = false;
   bool isListening = false;
 
+  /// Optional initial prompt that biases Whisper decoding toward specific
+  /// vocabulary, names, and punctuation. Useful for domain-specific
+  /// transcription. Empty string disables biasing (matches whisper.cpp's
+  /// default of nullptr). Edit this string to experiment.
+  static const String _initialPrompt =
+      'Ask not what your country can do for you';
+
   @override
   void initState() {
     initModel();
@@ -137,6 +144,7 @@ class _MyHomePageState extends State<MyHomePage> {
             model: model,
             audioPath: audioPath,
             lang: 'en',
+            initialPrompt: _initialPrompt.isEmpty ? null : _initialPrompt,
           );
 
           if (mounted) {
@@ -183,6 +191,7 @@ class _MyHomePageState extends State<MyHomePage> {
       model: model,
       audioPath: convertedFile.path,
       lang: 'auto',
+      initialPrompt: _initialPrompt.isEmpty ? null : _initialPrompt,
     );
 
     setState(() {

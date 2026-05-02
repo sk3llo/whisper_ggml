@@ -160,6 +160,14 @@ json transcribe(json jsonBody)
     params.audio = jsonBody["audio"];
     params.split_on_word = jsonBody["split_on_word"];
     params.diarize = jsonBody["diarize"];
+
+    // Optional initial prompt to bias decoding (whisper_full_params.initial_prompt).
+    // Absent / null / empty -> leave default (nullptr) for bit-for-bit compatibility
+    // with callers that don't set it.
+    if (jsonBody.contains("initial_prompt") && jsonBody["initial_prompt"].is_string())
+    {
+        params.prompt = jsonBody["initial_prompt"].get<std::string>();
+    }
     json jsonResult;
     jsonResult["@type"] = "transcribe";
 
@@ -271,6 +279,15 @@ json transcribe(json jsonBody)
         wparams.language = params.language.c_str();
         wparams.n_threads = params.n_threads;
         wparams.split_on_word = params.split_on_word;
+
+        // initial_prompt is a `const char *` that whisper.cpp reads during
+        // decoding. The backing std::string `params.prompt` is stack-local
+        // here and outlives the whisper_full() call below, so the pointer
+        // is valid for the full inference. Leave nullptr (default) when
+        // empty so behaviour is unchanged for callers that don't set it.
+        if (!params.prompt.empty()) {
+            wparams.initial_prompt = params.prompt.c_str();
+        }
 
         if (params.split_on_word) {
             wparams.max_len = 1;
