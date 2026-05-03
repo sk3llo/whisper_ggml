@@ -3,6 +3,7 @@
 * Added `initialPrompt` parameter to `TranscribeRequest` and `WhisperController.transcribe`
 * Wired `initial_prompt` through to `whisper_full_params.initial_prompt` on Android, iOS, and macOS to bias decoding toward domain-specific vocabulary, names, and punctuation
 * Empty / null prompt leaves the parameter at whisper.cpp's default (`nullptr`), so existing callers see no behaviour change
+* Removed unused `flutter_riverpod` dependency, which was constraining consumers to riverpod 2.x even though the package never imported it
 
 ## 1.7.0
 
