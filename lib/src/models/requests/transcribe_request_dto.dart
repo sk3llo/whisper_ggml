@@ -31,6 +31,7 @@ abstract class TranscribeRequestDto
     required bool diarize,
     @JsonKey(name: 'speed_up') required bool speedUp,
     @JsonKey(name: 'initial_prompt') String? initialPrompt,
+    @JsonKey(name: 'no_context') @Default(false) bool noContext,
   }) = _TranscribeRequestDto;
 
   /// Convert [request] to TranscribeRequestDto with specified [modelPath]
@@ -54,6 +55,7 @@ abstract class TranscribeRequestDto
       speedUp: request.speedUp,
       isRealtime: request.isRealtime,
       initialPrompt: request.initialPrompt,
+      noContext: request.noContext,
     );
   }
   const TranscribeRequestDto._();

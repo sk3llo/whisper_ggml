@@ -31,6 +31,19 @@ abstract class TranscribeRequest with _$TranscribeRequest {
     ///
     /// See OpenAI's transcription docs for guidance on prompt content.
     @Default(null) String? initialPrompt,
+
+    /// Sets `whisper_full_params.no_context` on the native side. Equivalent
+    /// to Python whisper's `condition_on_previous_text=False`.
+    ///
+    /// When `true`, whisper.cpp does NOT feed prior-segment transcripts
+    /// into the decoder as context. Useful for short single-utterance
+    /// transcription (e.g. verse recitation) where carry-over context
+    /// can bias the decoder toward hallucinated repetition or "tail of
+    /// utterance" attractors.
+    ///
+    /// Default `false` matches whisper.cpp's default and the behaviour
+    /// of every previous version of this package.
+    @Default(false) bool noContext,
   }) = _TranscribeRequest;
   const TranscribeRequest._();
 }

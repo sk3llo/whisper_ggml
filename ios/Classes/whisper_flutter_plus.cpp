@@ -130,6 +130,13 @@ struct whisper_params
     bool print_progress = false;
     bool no_timestamps = false;
     bool split_on_word = false;
+    // When true, set whisper_full_params.no_context = true so whisper.cpp
+    // does NOT feed prior-segment transcripts into the decoder as context.
+    // Mirrors Python whisper's `condition_on_previous_text=False`. Useful
+    // for short single-utterance transcription (e.g. verse recitation)
+    // where carry-over context biases the decoder toward hallucinated
+    // repetition / "tail of utterance" attractors.
+    bool no_context = false;
 
     std::string language = "id";
     std::string prompt;
@@ -167,6 +174,14 @@ json transcribe(json jsonBody)
     if (jsonBody.contains("initial_prompt") && jsonBody["initial_prompt"].is_string())
     {
         params.prompt = jsonBody["initial_prompt"].get<std::string>();
+    }
+
+    // Optional no_context flag (whisper_full_params.no_context). Equivalent to
+    // Python whisper's `condition_on_previous_text=False`. Absent / false ->
+    // leave default (false) for bit-for-bit compatibility with old callers.
+    if (jsonBody.contains("no_context") && jsonBody["no_context"].is_boolean())
+    {
+        params.no_context = jsonBody["no_context"].get<bool>();
     }
     json jsonResult;
     jsonResult["@type"] = "transcribe";
@@ -288,6 +303,11 @@ json transcribe(json jsonBody)
         if (!params.prompt.empty()) {
             wparams.initial_prompt = params.prompt.c_str();
         }
+
+        // Forward the no_context flag straight to whisper.cpp. Default in
+        // whisper_full_default_params() is false; flipping to true disables
+        // cross-segment prior-text conditioning.
+        wparams.no_context = params.no_context;
 
         if (params.split_on_word) {
             wparams.max_len = 1;

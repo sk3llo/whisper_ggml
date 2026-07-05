@@ -21,6 +21,7 @@ class WhisperController {
     String lang = 'en',
     bool diarize = false,
     String? initialPrompt,
+    bool noContext = false,
   }) async {
     await initModel(model);
 
@@ -41,6 +42,7 @@ class WhisperController {
           isRealtime: true,
           diarize: diarize,
           initialPrompt: initialPrompt,
+          noContext: noContext,
         ),
         modelPath: _modelPath,
       );

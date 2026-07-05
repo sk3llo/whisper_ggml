@@ -39,6 +39,8 @@ mixin _$TranscribeRequestDto {
   bool get speedUp;
   @JsonKey(name: 'initial_prompt')
   String? get initialPrompt;
+  @JsonKey(name: 'no_context')
+  bool get noContext;
 
   /// Create a copy of TranscribeRequestDto
   /// with the given fields replaced by the non-null parameter values.
@@ -80,7 +82,9 @@ mixin _$TranscribeRequestDto {
             (identical(other.diarize, diarize) || other.diarize == diarize) &&
             (identical(other.speedUp, speedUp) || other.speedUp == speedUp) &&
             (identical(other.initialPrompt, initialPrompt) ||
-                other.initialPrompt == initialPrompt));
+                other.initialPrompt == initialPrompt) &&
+            (identical(other.noContext, noContext) ||
+                other.noContext == noContext));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -101,11 +105,12 @@ mixin _$TranscribeRequestDto {
       isRealtime,
       diarize,
       speedUp,
-      initialPrompt);
+      initialPrompt,
+      noContext);
 
   @override
   String toString() {
-    return 'TranscribeRequestDto(audio: $audio, model: $model, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, isRealtime: $isRealtime, diarize: $diarize, speedUp: $speedUp, initialPrompt: $initialPrompt)';
+    return 'TranscribeRequestDto(audio: $audio, model: $model, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, isRealtime: $isRealtime, diarize: $diarize, speedUp: $speedUp, initialPrompt: $initialPrompt, noContext: $noContext)';
   }
 }
 
@@ -130,7 +135,8 @@ abstract mixin class $TranscribeRequestDtoCopyWith<$Res> {
       @JsonKey(name: 'is_realtime') bool isRealtime,
       bool diarize,
       @JsonKey(name: 'speed_up') bool speedUp,
-      @JsonKey(name: 'initial_prompt') String? initialPrompt});
+      @JsonKey(name: 'initial_prompt') String? initialPrompt,
+      @JsonKey(name: 'no_context') bool noContext});
 }
 
 /// @nodoc
@@ -161,6 +167,7 @@ class _$TranscribeRequestDtoCopyWithImpl<$Res>
     Object? diarize = null,
     Object? speedUp = null,
     Object? initialPrompt = freezed,
+    Object? noContext = null,
   }) {
     return _then(_self.copyWith(
       audio: null == audio
@@ -223,6 +230,10 @@ class _$TranscribeRequestDtoCopyWithImpl<$Res>
           ? _self.initialPrompt
           : initialPrompt // ignore: cast_nullable_to_non_nullable
               as String?,
+      noContext: null == noContext
+          ? _self.noContext
+          : noContext // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -335,7 +346,8 @@ extension TranscribeRequestDtoPatterns on TranscribeRequestDto {
             @JsonKey(name: 'is_realtime') bool isRealtime,
             bool diarize,
             @JsonKey(name: 'speed_up') bool speedUp,
-            @JsonKey(name: 'initial_prompt') String? initialPrompt)?
+            @JsonKey(name: 'initial_prompt') String? initialPrompt,
+            @JsonKey(name: 'no_context') bool noContext)?
         $default, {
     required TResult orElse(),
   }) {
@@ -357,7 +369,8 @@ extension TranscribeRequestDtoPatterns on TranscribeRequestDto {
             _that.isRealtime,
             _that.diarize,
             _that.speedUp,
-            _that.initialPrompt);
+            _that.initialPrompt,
+            _that.noContext);
       case _:
         return orElse();
     }
@@ -393,7 +406,8 @@ extension TranscribeRequestDtoPatterns on TranscribeRequestDto {
             @JsonKey(name: 'is_realtime') bool isRealtime,
             bool diarize,
             @JsonKey(name: 'speed_up') bool speedUp,
-            @JsonKey(name: 'initial_prompt') String? initialPrompt)
+            @JsonKey(name: 'initial_prompt') String? initialPrompt,
+            @JsonKey(name: 'no_context') bool noContext)
         $default,
   ) {
     final _that = this;
@@ -414,7 +428,8 @@ extension TranscribeRequestDtoPatterns on TranscribeRequestDto {
             _that.isRealtime,
             _that.diarize,
             _that.speedUp,
-            _that.initialPrompt);
+            _that.initialPrompt,
+            _that.noContext);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -449,7 +464,8 @@ extension TranscribeRequestDtoPatterns on TranscribeRequestDto {
             @JsonKey(name: 'is_realtime') bool isRealtime,
             bool diarize,
             @JsonKey(name: 'speed_up') bool speedUp,
-            @JsonKey(name: 'initial_prompt') String? initialPrompt)?
+            @JsonKey(name: 'initial_prompt') String? initialPrompt,
+            @JsonKey(name: 'no_context') bool noContext)?
         $default,
   ) {
     final _that = this;
@@ -470,7 +486,8 @@ extension TranscribeRequestDtoPatterns on TranscribeRequestDto {
             _that.isRealtime,
             _that.diarize,
             _that.speedUp,
-            _that.initialPrompt);
+            _that.initialPrompt,
+            _that.noContext);
       case _:
         return null;
     }
@@ -495,7 +512,8 @@ class _TranscribeRequestDto extends TranscribeRequestDto {
       @JsonKey(name: 'is_realtime') required this.isRealtime,
       required this.diarize,
       @JsonKey(name: 'speed_up') required this.speedUp,
-      @JsonKey(name: 'initial_prompt') this.initialPrompt})
+      @JsonKey(name: 'initial_prompt') this.initialPrompt,
+      @JsonKey(name: 'no_context') this.noContext = false})
       : super._();
   factory _TranscribeRequestDto.fromJson(Map<String, dynamic> json) =>
       _$TranscribeRequestDtoFromJson(json);
@@ -540,6 +558,9 @@ class _TranscribeRequestDto extends TranscribeRequestDto {
   @override
   @JsonKey(name: 'initial_prompt')
   final String? initialPrompt;
+  @override
+  @JsonKey(name: 'no_context')
+  final bool noContext;
 
   /// Create a copy of TranscribeRequestDto
   /// with the given fields replaced by the non-null parameter values.
@@ -586,7 +607,9 @@ class _TranscribeRequestDto extends TranscribeRequestDto {
             (identical(other.diarize, diarize) || other.diarize == diarize) &&
             (identical(other.speedUp, speedUp) || other.speedUp == speedUp) &&
             (identical(other.initialPrompt, initialPrompt) ||
-                other.initialPrompt == initialPrompt));
+                other.initialPrompt == initialPrompt) &&
+            (identical(other.noContext, noContext) ||
+                other.noContext == noContext));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -607,11 +630,12 @@ class _TranscribeRequestDto extends TranscribeRequestDto {
       isRealtime,
       diarize,
       speedUp,
-      initialPrompt);
+      initialPrompt,
+      noContext);
 
   @override
   String toString() {
-    return 'TranscribeRequestDto(audio: $audio, model: $model, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, isRealtime: $isRealtime, diarize: $diarize, speedUp: $speedUp, initialPrompt: $initialPrompt)';
+    return 'TranscribeRequestDto(audio: $audio, model: $model, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, isRealtime: $isRealtime, diarize: $diarize, speedUp: $speedUp, initialPrompt: $initialPrompt, noContext: $noContext)';
   }
 }
 
@@ -638,7 +662,8 @@ abstract mixin class _$TranscribeRequestDtoCopyWith<$Res>
       @JsonKey(name: 'is_realtime') bool isRealtime,
       bool diarize,
       @JsonKey(name: 'speed_up') bool speedUp,
-      @JsonKey(name: 'initial_prompt') String? initialPrompt});
+      @JsonKey(name: 'initial_prompt') String? initialPrompt,
+      @JsonKey(name: 'no_context') bool noContext});
 }
 
 /// @nodoc
@@ -669,6 +694,7 @@ class __$TranscribeRequestDtoCopyWithImpl<$Res>
     Object? diarize = null,
     Object? speedUp = null,
     Object? initialPrompt = freezed,
+    Object? noContext = null,
   }) {
     return _then(_TranscribeRequestDto(
       audio: null == audio
@@ -731,6 +757,10 @@ class __$TranscribeRequestDtoCopyWithImpl<$Res>
           ? _self.initialPrompt
           : initialPrompt // ignore: cast_nullable_to_non_nullable
               as String?,
+      noContext: null == noContext
+          ? _self.noContext
+          : noContext // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
