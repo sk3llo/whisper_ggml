@@ -254,9 +254,11 @@ class _MyHomePageState extends State<MyHomePage> {
         pcm16Stream: pcmStream,
         lang: 'en',
         initialPrompt: _initialPrompt.isEmpty ? null : _initialPrompt,
-        // Silence between phrases would otherwise transcribe as
-        // annotations like [BLANK_AUDIO].
-        suppressNonSpeechTokens: true,
+        // Left false: with it, real non-speech sounds (knocks, clicks)
+        // decode as plausible-looking fake words instead of honest
+        // annotations like [gun shots]. Silence itself never reaches the
+        // decoder thanks to the native energy gate.
+        suppressNonSpeechTokens: false,
       );
       liveSession = session;
 

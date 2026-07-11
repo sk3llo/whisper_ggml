@@ -9,6 +9,7 @@
 #include <string>
 #include <thread>
 #include <mutex>
+#include <algorithm>
 #include <vector>
 
 #include <iostream>
@@ -409,6 +410,11 @@ extern "C"
 // past ~25 s its text is committed and the buffer restarts, keeping memory
 // and inference time bounded (a word straddling the commit boundary may be
 // clipped — acceptable for a draft).
+//
+// An RMS energy gate tracks the last voiced sample: inference only runs
+// when new voiced audio has arrived, and the decoded window is trimmed
+// shortly after the last voiced sample. Without this, whisper hallucinates
+// over trailing silence (repeating earlier text or inventing phrases).
 // ---------------------------------------------------------------------------
 
 struct whisper_stream_state
@@ -416,6 +422,8 @@ struct whisper_stream_state
     struct whisper_context *ctx = nullptr;
     std::vector<float> pcmf32;   // samples of the current window
     size_t n_transcribed = 0;    // window samples covered by the last run
+    size_t n_voiced = 0;         // end of the last chunk with speech energy
+    float noise_floor = 0.005f;  // adaptive ambient RMS estimate
     std::string committed;       // text of windows already committed
     std::string last_text;       // text of the current window's last run
     std::string language = "en";
@@ -430,6 +438,10 @@ static whisper_stream_state g_stream;
 
 static const size_t STREAM_STEP_SAMPLES   = (size_t)(1.5 * WHISPER_SAMPLE_RATE);
 static const size_t STREAM_COMMIT_SAMPLES = (size_t)(25.0 * WHISPER_SAMPLE_RATE);
+// Absolute minimum RMS for speech, regardless of the adaptive floor.
+static const float  STREAM_VOICE_RMS      = 0.0015f;
+// Decode this much audio past the last voiced sample (trailing consonants).
+static const size_t STREAM_VOICE_PAD      = (size_t)(0.2 * WHISPER_SAMPLE_RATE);
 
 // Runs whisper_full over the current window. Caller must hold g_stream.mutex.
 static json stream_run_inference()
@@ -450,8 +462,17 @@ static json stream_run_inference()
         wparams.initial_prompt = g_stream.prompt.c_str();
     }
 
+    // Trim trailing silence from the decode window; decoding it makes
+    // whisper hallucinate (repeats or invented phrases).
+    const size_t n_decode =
+        std::min(g_stream.pcmf32.size(), g_stream.n_voiced + STREAM_VOICE_PAD);
+    if (n_decode == 0) {
+        result["text"] = g_stream.committed + g_stream.last_text;
+        return result;
+    }
+
     if (whisper_full(g_stream.ctx, wparams, g_stream.pcmf32.data(),
-                     (int)g_stream.pcmf32.size()) != 0) {
+                     (int)n_decode) != 0) {
         result["@type"] = "error";
         result["message"] = "failed to process audio";
         return result;
@@ -464,13 +485,15 @@ static json stream_run_inference()
     }
 
     g_stream.last_text = text;
-    g_stream.n_transcribed = g_stream.pcmf32.size();
+    g_stream.n_transcribed = n_decode;
 
-    if (g_stream.pcmf32.size() >= STREAM_COMMIT_SAMPLES) {
+    if (n_decode >= STREAM_COMMIT_SAMPLES) {
         g_stream.committed += text;
         g_stream.last_text.clear();
-        g_stream.pcmf32.clear();
+        g_stream.pcmf32.erase(g_stream.pcmf32.begin(),
+                              g_stream.pcmf32.begin() + n_decode);
         g_stream.n_transcribed = 0;
+        g_stream.n_voiced -= std::min(g_stream.n_voiced, n_decode);
     }
 
     result["text"] = g_stream.committed + g_stream.last_text;
@@ -499,6 +522,8 @@ extern "C"
         }
         g_stream.pcmf32.clear();
         g_stream.n_transcribed = 0;
+        g_stream.n_voiced = 0;
+        g_stream.noise_floor = 0.005f;
         g_stream.committed.clear();
         g_stream.last_text.clear();
 
@@ -535,10 +560,33 @@ extern "C"
             return jsonToChar(jsonResult);
         }
         if (pcm != nullptr && n_samples > 0) {
+            double sum2 = 0.0;
+            for (int32_t i = 0; i < n_samples; ++i) {
+                sum2 += (double)pcm[i] * pcm[i];
+            }
             g_stream.pcmf32.insert(g_stream.pcmf32.end(), pcm, pcm + n_samples);
+
+            // Adaptive noise floor: falls quickly, rises slowly, so it
+            // tracks room tone without absorbing speech. A chunk is
+            // voiced only when clearly above the floor.
+            const float rms = (float)std::sqrt(sum2 / n_samples);
+            if (rms < g_stream.noise_floor) {
+                g_stream.noise_floor += 0.5f * (rms - g_stream.noise_floor);
+            } else {
+                g_stream.noise_floor += 0.0005f * (rms - g_stream.noise_floor);
+            }
+            g_stream.noise_floor = std::min(g_stream.noise_floor, 0.01f);
+            const float voice_thold =
+                std::max(2.5f * g_stream.noise_floor, STREAM_VOICE_RMS);
+            if (rms >= voice_thold) {
+                g_stream.n_voiced = g_stream.pcmf32.size();
+            }
         }
 
-        if (g_stream.pcmf32.size() - g_stream.n_transcribed >= STREAM_STEP_SAMPLES) {
+        // Run only when new *voiced* audio arrived — silence alone
+        // never triggers a decode.
+        if (g_stream.n_voiced > g_stream.n_transcribed &&
+            g_stream.pcmf32.size() - g_stream.n_transcribed >= STREAM_STEP_SAMPLES) {
             return jsonToChar(stream_run_inference());
         }
 
@@ -558,9 +606,12 @@ extern "C"
             return jsonToChar(jsonResult);
         }
 
-        // Cover whatever audio arrived after the last run.
-        if (g_stream.pcmf32.size() > g_stream.n_transcribed &&
-            g_stream.pcmf32.size() >= (size_t)WHISPER_SAMPLE_RATE / 2) {
+        // Cover voiced audio that arrived after the last run; a silent
+        // tail is dropped rather than decoded.
+        const size_t n_tail = std::min(g_stream.pcmf32.size(),
+                                       g_stream.n_voiced + STREAM_VOICE_PAD);
+        if (g_stream.n_voiced > g_stream.n_transcribed &&
+            n_tail >= (size_t)WHISPER_SAMPLE_RATE / 2) {
             stream_run_inference();
         }
 
@@ -572,6 +623,7 @@ extern "C"
         g_stream.pcmf32.clear();
         g_stream.pcmf32.shrink_to_fit();
         g_stream.n_transcribed = 0;
+        g_stream.n_voiced = 0;
         g_stream.committed.clear();
         g_stream.last_text.clear();
 
