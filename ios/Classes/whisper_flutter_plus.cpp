@@ -10,6 +10,7 @@
 #include <thread>
 #include <mutex>
 #include <algorithm>
+#include <cstdlib>
 #include <vector>
 
 #include <iostream>
@@ -26,7 +27,9 @@ void print(std::string value)
 char *jsonToChar(json jsonData)
 {
     std::string result = jsonData.dump();
-    char *ch = new char[result.size() + 1];
+    // malloc, not new[]: callers across the FFI boundary free this
+    // with the C allocator (Dart's malloc.free).
+    char *ch = (char *)malloc(result.size() + 1);
     strcpy(ch, result.c_str());
     return ch;
 }
@@ -39,7 +42,7 @@ std::string charToString(char *value)
 
 char *stringToChar(std::string value)
 {
-    char *ch = new char[value.size() + 1];
+    char *ch = (char *)malloc(value.size() + 1);
     strcpy(ch, value.c_str());
     return ch;
 }
@@ -421,6 +424,9 @@ struct whisper_stream_state
     size_t n_transcribed = 0;    // window samples covered by the last run
     size_t n_voiced = 0;         // end of the last chunk with speech energy
     float noise_floor = 0.005f;  // adaptive ambient RMS estimate
+    float gate_rms_min = 0.0015f;   // absolute minimum speech RMS
+    float gate_ratio = 2.5f;        // voiced thold = ratio * noise_floor
+    float gate_floor_cap = 0.01f;   // noise_floor cap (loud rooms)
     std::string committed;       // text of windows already committed
     std::string last_text;       // text of the current window's last run
     std::string language = "en";
@@ -435,8 +441,6 @@ static whisper_stream_state g_stream;
 
 static const size_t STREAM_STEP_SAMPLES   = (size_t)(1.5 * WHISPER_SAMPLE_RATE);
 static const size_t STREAM_COMMIT_SAMPLES = (size_t)(25.0 * WHISPER_SAMPLE_RATE);
-// Absolute minimum RMS for speech, regardless of the adaptive floor.
-static const float  STREAM_VOICE_RMS      = 0.0015f;
 // Decode this much audio past the last voiced sample (trailing consonants).
 static const size_t STREAM_VOICE_PAD      = (size_t)(0.2 * WHISPER_SAMPLE_RATE);
 
@@ -463,7 +467,7 @@ static json stream_run_inference()
     // whisper hallucinate (repeats or invented phrases).
     const size_t n_decode =
         std::min(g_stream.pcmf32.size(), g_stream.n_voiced + STREAM_VOICE_PAD);
-    if (n_decode == 0) {
+    if (n_decode < (size_t)WHISPER_SAMPLE_RATE / 2) {
         result["text"] = g_stream.committed + g_stream.last_text;
         return result;
     }
@@ -524,16 +528,28 @@ extern "C"
         g_stream.committed.clear();
         g_stream.last_text.clear();
 
-        g_stream.language  = jsonBody.value("language", "en");
-        g_stream.n_threads = jsonBody.value("threads", 4);
-        g_stream.translate = jsonBody.value("is_translate", false);
-        g_stream.suppress_nst = jsonBody.value("suppress_non_speech_tokens", false);
-        g_stream.prompt.clear();
-        if (jsonBody.contains("initial_prompt") && jsonBody["initial_prompt"].is_string()) {
-            g_stream.prompt = jsonBody["initial_prompt"].get<std::string>();
+        std::string model;
+        try {
+            g_stream.language  = jsonBody.value("language", "en");
+            g_stream.n_threads = jsonBody.value("threads", 4);
+            g_stream.translate = jsonBody.value("is_translate", false);
+            g_stream.suppress_nst = jsonBody.value("suppress_non_speech_tokens", false);
+            g_stream.gate_rms_min   = (float)jsonBody.value("gate_rms_min", 0.0015);
+            g_stream.gate_ratio     = (float)jsonBody.value("gate_voice_ratio", 2.5);
+            g_stream.gate_floor_cap = (float)jsonBody.value("gate_floor_cap", 0.01);
+            g_stream.prompt.clear();
+            if (jsonBody.contains("initial_prompt") && jsonBody["initial_prompt"].is_string()) {
+                g_stream.prompt = jsonBody["initial_prompt"].get<std::string>();
+            }
+            model = jsonBody["model"].get<std::string>();
+        } catch (const json::exception &e) {
+            // A C++ exception escaping extern "C" into FFI would be
+            // std::terminate; convert type errors to an error response.
+            jsonResult["@type"] = "error";
+            jsonResult["message"] =
+                std::string("stream_start: bad request: ") + e.what();
+            return jsonToChar(jsonResult);
         }
-
-        const std::string model = jsonBody["model"].get<std::string>();
         g_stream.ctx = whisper_init_from_file(model.c_str());
         if (g_stream.ctx == nullptr) {
             jsonResult["@type"] = "error";
@@ -572,9 +588,11 @@ extern "C"
             } else {
                 g_stream.noise_floor += 0.0005f * (rms - g_stream.noise_floor);
             }
-            g_stream.noise_floor = std::min(g_stream.noise_floor, 0.01f);
-            const float voice_thold =
-                std::max(2.5f * g_stream.noise_floor, STREAM_VOICE_RMS);
+            g_stream.noise_floor =
+                std::min(g_stream.noise_floor, g_stream.gate_floor_cap);
+            const float voice_thold = std::max(
+                g_stream.gate_ratio * g_stream.noise_floor,
+                g_stream.gate_rms_min);
             if (rms >= voice_thold) {
                 g_stream.n_voiced = g_stream.pcmf32.size();
             }

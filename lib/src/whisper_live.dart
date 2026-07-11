@@ -58,6 +58,9 @@ Future<WhisperLiveSession> startWhisperLiveSession({
   String? initialPrompt,
   bool suppressNonSpeechTokens = false,
   int threads = 4,
+  double gateRmsMin = 0.0015,
+  double gateVoiceRatio = 2.5,
+  double gateNoiseFloorCap = 0.01,
 }) async {
   final ReceivePort fromWorker = ReceivePort();
   final Isolate worker =
@@ -68,6 +71,8 @@ Future<WhisperLiveSession> startWhisperLiveSession({
   final Completer<void> started = Completer<void>();
   late final WhisperLiveSession session;
 
+  String lastText = '';
+
   fromWorker.listen((dynamic message) {
     final List<dynamic> msg = message as List<dynamic>;
     switch (msg[0] as String) {
@@ -76,7 +81,8 @@ Future<WhisperLiveSession> startWhisperLiveSession({
       case 'started':
         started.complete();
       case 'partial':
-        if (!partials.isClosed) partials.add(msg[1] as String);
+        lastText = msg[1] as String;
+        if (!partials.isClosed) partials.add(lastText);
       case 'final':
         if (!partials.isClosed) partials.close();
         session._final.complete(msg[1] as String);
@@ -87,7 +93,16 @@ Future<WhisperLiveSession> startWhisperLiveSession({
         if (!started.isCompleted) {
           started.completeError(error);
         } else if (!session._final.isCompleted) {
-          partials.addError(error);
+          // A mid-session native error is fatal: surface it on [partials],
+          // then finalize with the last known text so stop() never hangs.
+          if (!partials.isClosed) {
+            partials
+              ..addError(error)
+              ..close();
+          }
+          session._final.complete(lastText);
+          fromWorker.close();
+          session._worker.kill();
         }
     }
   });
@@ -103,6 +118,9 @@ Future<WhisperLiveSession> startWhisperLiveSession({
       'is_translate': translate,
       'threads': threads,
       'suppress_non_speech_tokens': suppressNonSpeechTokens,
+      'gate_rms_min': gateRmsMin,
+      'gate_voice_ratio': gateVoiceRatio,
+      'gate_floor_cap': gateNoiseFloorCap,
       if (initialPrompt != null && initialPrompt.isNotEmpty)
         'initial_prompt': initialPrompt,
     }),
@@ -112,6 +130,8 @@ Future<WhisperLiveSession> startWhisperLiveSession({
     await started.future;
   } catch (_) {
     worker.kill(priority: Isolate.immediate);
+    fromWorker.close();
+    await partials.close();
     rethrow;
   }
   return session;
@@ -121,6 +141,11 @@ Future<WhisperLiveSession> startWhisperLiveSession({
 /// isolate. Messages arriving while inference runs simply queue in the
 /// mailbox; the native side only re-runs inference once enough new audio
 /// has accumulated, so queued chunks drain quickly.
+///
+/// Note: backpressure is bounded only by decode speed. On devices where the
+/// model decodes slower than real time, the mailbox and the native window
+/// grow and partial latency drifts behind the audio. If that becomes a
+/// target, cap the window or surface an "audio seconds behind" metric.
 void _liveWorker(SendPort toMain) {
   final DynamicLibrary lib = Platform.isAndroid
       ? DynamicLibrary.open('libwhisper.so')
@@ -136,9 +161,15 @@ void _liveWorker(SendPort toMain) {
   toMain.send(['ready', inbox.sendPort]);
 
   String lastPartial = '';
+  int pendingByte = -1; // odd trailing byte carried into the next chunk
 
-  Map<String, dynamic> parse(Pointer<Utf8> res) =>
-      json.decode(res.toDartString()) as Map<String, dynamic>;
+  Map<String, dynamic> parse(Pointer<Utf8> res) {
+    final Map<String, dynamic> result =
+        json.decode(res.toDartString()) as Map<String, dynamic>;
+    // The native side allocates responses with malloc for exactly this free.
+    malloc.free(res);
+    return result;
+  }
 
   inbox.listen((dynamic message) {
     final List<dynamic> msg = message as List<dynamic>;
@@ -154,11 +185,27 @@ void _liveWorker(SendPort toMain) {
         }
       case 'feed':
         Uint8List bytes = msg[1] as Uint8List;
-        // asInt16List requires an even byte offset into the underlying
-        // buffer; chunks that arrive as odd-offset views must be copied.
-        if (bytes.offsetInBytes.isOdd) {
-          bytes = Uint8List.fromList(bytes);
+        // Normalize the chunk: asInt16List needs an even byte offset, and an
+        // odd-length chunk would shift every following sample by one byte
+        // (silent corruption), so the trailing byte is carried into the next
+        // chunk instead.
+        if (pendingByte >= 0 ||
+            bytes.offsetInBytes.isOdd ||
+            bytes.length.isOdd) {
+          final Uint8List merged =
+              Uint8List(bytes.length + (pendingByte >= 0 ? 1 : 0));
+          int offset = 0;
+          if (pendingByte >= 0) merged[offset++] = pendingByte;
+          merged.setRange(offset, offset + bytes.length, bytes);
+          if (merged.length.isOdd) {
+            pendingByte = merged.last;
+            bytes = Uint8List.sublistView(merged, 0, merged.length - 1);
+          } else {
+            pendingByte = -1;
+            bytes = merged;
+          }
         }
+        if (bytes.isEmpty) return;
         final Int16List samples =
             bytes.buffer.asInt16List(bytes.offsetInBytes, bytes.length ~/ 2);
         final Pointer<Float> pcm = malloc.allocate<Float>(

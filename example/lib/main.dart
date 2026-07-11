@@ -44,6 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String? transcript;
   MicMode activeMode = MicMode.none;
   bool isTranscribing = false;
+  bool _actionInFlight = false;
   WhisperLiveSession? liveSession;
 
   /// Optional initial prompt that biases Whisper decoding toward specific
@@ -221,6 +222,19 @@ class _MyHomePageState extends State<MyHomePage> {
   /// Live transcription: transcripts appear while you speak instead of
   /// after recording stops.
   Future<void> toggleLive() async {
+    // The button stays enabled across the awaits below; without this guard
+    // a double-tap would start two recorder streams against the single
+    // native session.
+    if (_actionInFlight) return;
+    _actionInFlight = true;
+    try {
+      await _toggleLive();
+    } finally {
+      _actionInFlight = false;
+    }
+  }
+
+  Future<void> _toggleLive() async {
     if (!await audioRecorder.hasPermission()) return;
 
     if (activeMode == MicMode.live) {
@@ -262,11 +276,16 @@ class _MyHomePageState extends State<MyHomePage> {
       );
       liveSession = session;
 
-      session.partials.listen((text) {
-        if (mounted && text.isNotEmpty) {
-          setState(() => transcript = text);
-        }
-      });
+      session.partials.listen(
+        (text) {
+          if (mounted && text.isNotEmpty) {
+            setState(() => transcript = text);
+          }
+        },
+        // A fatal native error mid-session; the session finalizes itself
+        // and stop() still returns the last partial.
+        onError: (Object e) => debugPrint('Live transcription error: $e'),
+      );
 
       setState(() => activeMode = MicMode.live);
     }
@@ -275,6 +294,16 @@ class _MyHomePageState extends State<MyHomePage> {
   /// Classic transcription: records to a file, then transcribes it once
   /// recording stops.
   Future<void> toggleClassic() async {
+    if (_actionInFlight) return;
+    _actionInFlight = true;
+    try {
+      await _toggleClassic();
+    } finally {
+      _actionInFlight = false;
+    }
+  }
+
+  Future<void> _toggleClassic() async {
     if (!await audioRecorder.hasPermission()) return;
 
     if (activeMode == MicMode.classic) {

@@ -27,12 +27,20 @@ class WhisperController {
   /// and `stop()` returns the full transcript.
   ///
   /// Unlike [transcribe], the model is loaded once for the whole session.
+  /// The `gate*` parameters tune the native energy gate that keeps silence
+  /// away from the decoder: a chunk counts as voiced when its RMS exceeds
+  /// `max(gateVoiceRatio * noiseFloor, gateRmsMin)`, where the adaptive
+  /// noise floor is capped at [gateNoiseFloorCap]. Raise the cap for loud
+  /// environments; lower [gateRmsMin] for very quiet speakers.
   Future<WhisperLiveSession> transcribeLive({
     required WhisperModel model,
     required Stream<Uint8List> pcm16Stream,
     String lang = 'en',
     String? initialPrompt,
     bool suppressNonSpeechTokens = false,
+    double gateRmsMin = 0.0015,
+    double gateVoiceRatio = 2.5,
+    double gateNoiseFloorCap = 0.01,
   }) async {
     await initModel(model);
 
@@ -41,12 +49,18 @@ class WhisperController {
       lang: lang,
       initialPrompt: initialPrompt,
       suppressNonSpeechTokens: suppressNonSpeechTokens,
+      gateRmsMin: gateRmsMin,
+      gateVoiceRatio: gateVoiceRatio,
+      gateNoiseFloorCap: gateNoiseFloorCap,
     );
 
     pcm16Stream.listen(
       session.feed,
       onDone: session.stop,
-      onError: (Object _) => session.stop(),
+      onError: (Object e) {
+        debugPrint('transcribeLive: audio stream error: $e');
+        session.stop();
+      },
     );
 
     return session;
