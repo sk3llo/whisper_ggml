@@ -60,6 +60,8 @@ struct whisper_params
     bool split_on_word = false;
     // whisper_full_params.no_context: disable cross-segment text conditioning.
     bool no_context = false;
+    // whisper_full_params.suppress_non_speech_tokens: drop [BLANK_AUDIO]-style annotations.
+    bool suppress_nst = false;
 
     std::string language = "auto";
     std::string prompt;
@@ -99,6 +101,10 @@ json transcribe(json jsonBody) noexcept
     if (jsonBody.contains("no_context") && jsonBody["no_context"].is_boolean())
     {
         params.no_context = jsonBody["no_context"].get<bool>();
+    }
+    if (jsonBody.contains("suppress_non_speech_tokens") && jsonBody["suppress_non_speech_tokens"].is_boolean())
+    {
+        params.suppress_nst = jsonBody["suppress_non_speech_tokens"].get<bool>();
     }
     json jsonResult;
     jsonResult["@type"] = "transcribe";
@@ -201,6 +207,7 @@ json transcribe(json jsonBody) noexcept
             wparams.initial_prompt = params.prompt.c_str();
         }
         wparams.no_context = params.no_context;
+        wparams.suppress_non_speech_tokens = params.suppress_nst;
 
         if (params.split_on_word) {
             wparams.max_len = 1;
@@ -332,6 +339,7 @@ struct whisper_stream_state
     std::string prompt;
     int n_threads = 4;
     bool translate = false;
+    bool suppress_nst = false;
     std::mutex mutex;
 };
 
@@ -354,6 +362,7 @@ static json stream_run_inference()
     wparams.language         = g_stream.language.c_str();
     wparams.n_threads        = g_stream.n_threads;
     wparams.no_context       = true;
+    wparams.suppress_non_speech_tokens = g_stream.suppress_nst;
     if (!g_stream.prompt.empty()) {
         wparams.initial_prompt = g_stream.prompt.c_str();
     }
@@ -413,6 +422,7 @@ extern "C"
         g_stream.language  = jsonBody.value("language", "en");
         g_stream.n_threads = jsonBody.value("threads", 4);
         g_stream.translate = jsonBody.value("is_translate", false);
+        g_stream.suppress_nst = jsonBody.value("suppress_non_speech_tokens", false);
         g_stream.prompt.clear();
         if (jsonBody.contains("initial_prompt") && jsonBody["initial_prompt"].is_string()) {
             g_stream.prompt = jsonBody["initial_prompt"].get<std::string>();

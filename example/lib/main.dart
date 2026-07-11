@@ -254,6 +254,9 @@ class _MyHomePageState extends State<MyHomePage> {
         pcm16Stream: pcmStream,
         lang: 'en',
         initialPrompt: _initialPrompt.isEmpty ? null : _initialPrompt,
+        // Silence between phrases would otherwise transcribe as
+        // annotations like [BLANK_AUDIO].
+        suppressNonSpeechTokens: true,
       );
       liveSession = session;
 

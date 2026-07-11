@@ -32,6 +32,7 @@ class WhisperController {
     required Stream<Uint8List> pcm16Stream,
     String lang = 'en',
     String? initialPrompt,
+    bool suppressNonSpeechTokens = false,
   }) async {
     await initModel(model);
 
@@ -39,6 +40,7 @@ class WhisperController {
       modelPath: _modelPath,
       lang: lang,
       initialPrompt: initialPrompt,
+      suppressNonSpeechTokens: suppressNonSpeechTokens,
     );
 
     pcm16Stream.listen(
@@ -57,6 +59,7 @@ class WhisperController {
     bool diarize = false,
     String? initialPrompt,
     bool noContext = false,
+    bool suppressNonSpeechTokens = false,
   }) async {
     await initModel(model);
 
@@ -78,6 +81,7 @@ class WhisperController {
           diarize: diarize,
           initialPrompt: initialPrompt,
           noContext: noContext,
+          suppressNonSpeechTokens: suppressNonSpeechTokens,
         ),
         modelPath: _modelPath,
       );

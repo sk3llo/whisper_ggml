@@ -44,6 +44,19 @@ abstract class TranscribeRequest with _$TranscribeRequest {
     /// Default `false` matches whisper.cpp's default and the behaviour
     /// of every previous version of this package.
     @Default(false) bool noContext,
+
+    /// Sets `whisper_full_params.suppress_non_speech_tokens` on the
+    /// native side.
+    ///
+    /// When `true`, whisper does not emit non-speech annotation tokens
+    /// such as `[BLANK_AUDIO]`, `[Music]`, or bracketed sound effects,
+    /// which it otherwise produces for silence and background noise.
+    /// Recommended for live transcription, where trailing silence is
+    /// common. Side effect: legitimate brackets and parentheses in
+    /// dictated text are suppressed too.
+    ///
+    /// Default `false` matches whisper.cpp's default.
+    @Default(false) bool suppressNonSpeechTokens,
   }) = _TranscribeRequest;
   const TranscribeRequest._();
 }

@@ -25,6 +25,8 @@ _TranscribeRequestDto _$TranscribeRequestDtoFromJson(
       speedUp: json['speed_up'] as bool,
       initialPrompt: json['initial_prompt'] as String?,
       noContext: json['no_context'] as bool? ?? false,
+      suppressNonSpeechTokens:
+          json['suppress_non_speech_tokens'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$TranscribeRequestDtoToJson(
@@ -46,4 +48,5 @@ Map<String, dynamic> _$TranscribeRequestDtoToJson(
       'speed_up': instance.speedUp,
       'initial_prompt': instance.initialPrompt,
       'no_context': instance.noContext,
+      'suppress_non_speech_tokens': instance.suppressNonSpeechTokens,
     };

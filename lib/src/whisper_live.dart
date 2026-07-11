@@ -56,6 +56,7 @@ Future<WhisperLiveSession> startWhisperLiveSession({
   String lang = 'en',
   bool translate = false,
   String? initialPrompt,
+  bool suppressNonSpeechTokens = false,
   int threads = 4,
 }) async {
   final ReceivePort fromWorker = ReceivePort();
@@ -101,6 +102,7 @@ Future<WhisperLiveSession> startWhisperLiveSession({
       'language': lang,
       'is_translate': translate,
       'threads': threads,
+      'suppress_non_speech_tokens': suppressNonSpeechTokens,
       if (initialPrompt != null && initialPrompt.isNotEmpty)
         'initial_prompt': initialPrompt,
     }),

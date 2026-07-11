@@ -1,0 +1,10 @@
+# Restrict code generation to the package sources. Without this,
+# build_runner crawls example/ios/.symlinks and .fvm/flutter_sdk (symlinks
+# back into the plugin and the whole Flutter SDK) — ~49k inputs.
+targets:
+  $default:
+    sources:
+      include:
+        - lib/**
+        - test/**
+        - pubspec.yaml

@@ -38,6 +38,26 @@ void main() {
       expect(body['no_context'], isTrue);
     });
 
+    test('suppressNonSpeechTokens defaults to false and forwards true', () {
+      final defaultDto = TranscribeRequestDto.fromTranscribeRequest(
+        request(),
+        '/tmp/model.bin',
+      );
+      final defaultBody =
+          json.decode(defaultDto.toRequestString()) as Map<String, dynamic>;
+      expect(defaultBody['suppress_non_speech_tokens'], isFalse);
+
+      final dto = TranscribeRequestDto.fromTranscribeRequest(
+        const TranscribeRequest(
+          audio: '/tmp/audio.wav',
+          suppressNonSpeechTokens: true,
+        ),
+        '/tmp/model.bin',
+      );
+      final body = json.decode(dto.toRequestString()) as Map<String, dynamic>;
+      expect(body['suppress_non_speech_tokens'], isTrue);
+    });
+
     test('fromJson defaults no_context to false when key is absent', () {
       final dto = TranscribeRequestDto.fromJson(const {
         'audio': '/tmp/audio.wav',
