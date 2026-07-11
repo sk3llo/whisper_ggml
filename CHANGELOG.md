@@ -1,3 +1,13 @@
+## 1.9.0
+
+* Added live (streaming) transcription: `WhisperController.transcribeLive` takes a stream of 16 kHz mono PCM16 audio and returns a `WhisperLiveSession` that emits progressively refined partial transcripts while the user speaks; `stop()` returns the final text
+* Live sessions load the model once and keep it in memory (new native `stream_start` / `stream_feed` / `stream_stop` API on Android, iOS, and macOS); inference runs on a dedicated isolate and never blocks the UI
+* Adaptive energy gate keeps silence — digital or room tone — away from the decoder, preventing `[BLANK_AUDIO]` markers and hallucinated repetition; tunable per session via `gateRmsMin`, `gateVoiceRatio`, and `gateNoiseFloorCap`
+* Added `suppressNonSpeechTokens` parameter (`whisper_full_params.suppress_non_speech_tokens`) to `TranscribeRequest`, `transcribe`, and `transcribeLive`
+* Fixed a native memory leak: FFI response buffers were never freed — one small leak per one-shot transcription, unbounded growth for streaming
+* Example app: redesigned UI with dedicated Live and Record microphone buttons and a JFK sample button; live transcripts update on screen while speaking
+* Fixed macOS example: added the missing microphone entitlement
+
 ## 1.8.0
 
 * Added `initialPrompt` parameter to `TranscribeRequest` and `WhisperController.transcribe`

@@ -6,7 +6,7 @@ _OpenAI Whisper ASR (Automatic Speech Recognition) for Flutter using [Whisper.cp
 
 <p align="center">
   <a href="https://pub.dev/packages/whisper_ggml">
-     <img src="https://img.shields.io/badge/pub-1.8.0-blue?logo=dart" alt="pub">
+     <img src="https://img.shields.io/badge/pub-1.9.0-blue?logo=dart" alt="pub">
   </a>
   <a href="https://buymeacoffee.com/sk3llo" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="21" width="114"></a>
 </p>
@@ -51,7 +51,7 @@ To use this library in your Flutter project, follow these steps:
 
 ```yaml
 dependencies:
-  whisper_ggml: ^1.8.0
+  whisper_ggml: ^1.9.0
 ```
 
 2. Run `flutter pub get` to install the package.
@@ -116,6 +116,46 @@ if (result?.transcription.text != null) {
     print(result!.transcription.text);
 }
 ```
+
+## Live (streaming) transcription
+
+`transcribeLive` transcribes audio while it is being recorded: partial
+transcripts arrive on a stream and refine as more audio comes in. The model
+is loaded once for the whole session.
+
+```dart
+final controller = WhisperController();
+
+/// Any stream of 16 kHz mono little-endian PCM16 audio works. With the
+/// `record` package:
+final pcmStream = await recorder.startStream(const RecordConfig(
+  encoder: AudioEncoder.pcm16bits,
+  sampleRate: 16000,
+  numChannels: 1,
+));
+
+final session = await controller.transcribeLive(
+  model: WhisperModel.base,
+  pcm16Stream: pcmStream,
+  lang: 'en',
+);
+
+session.partials.listen((text) {
+  /// Each event is the full transcript so far, not a delta
+  print(text);
+});
+
+/// Later — stops the recorder stream, finalizes, and frees the model:
+await recorder.stop();
+final finalText = await session.stop();
+```
+
+An adaptive energy gate keeps silence away from the decoder (whisper
+hallucinates on silent audio). If your environment is unusually loud or your
+speakers unusually quiet, tune it with `gateNoiseFloorCap`, `gateVoiceRatio`,
+and `gateRmsMin` on `transcribeLive`. Only one live session can run at a
+time. Real non-speech sounds (knocks, clicks) may still transcribe as
+bracketed annotations like `[door slams]`.
 
 
 
