@@ -44,6 +44,14 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isProcessingFile = false;
   bool isListening = false;
 
+  /// Optional initial prompt that biases Whisper decoding toward specific
+  /// vocabulary, names, and punctuation. Useful for domain-specific
+  /// transcription. Empty string disables biasing (matches whisper.cpp's
+  /// default of nullptr). Set to e.g. 'Ask not what your country can do
+  /// for you' to experiment. Note that decoding also mimics the prompt's
+  /// style: an unpunctuated prompt tends to produce unpunctuated output.
+  static const String _initialPrompt = '';
+
   @override
   void initState() {
     initModel();
@@ -137,6 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
             model: model,
             audioPath: audioPath,
             lang: 'en',
+            initialPrompt: _initialPrompt.isEmpty ? null : _initialPrompt,
           );
 
           if (mounted) {
@@ -169,6 +178,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> transcribeJfk() async {
     final Directory tempDir = await getTemporaryDirectory();
+    // On macOS the sandboxed Caches directory may not exist yet.
+    await tempDir.create(recursive: true);
     final asset = await rootBundle.load('assets/jfk.wav');
     final String jfkPath = "${tempDir.path}/jfk.wav";
     final File convertedFile = await File(jfkPath).writeAsBytes(
@@ -183,6 +194,7 @@ class _MyHomePageState extends State<MyHomePage> {
       model: model,
       audioPath: convertedFile.path,
       lang: 'auto',
+      initialPrompt: _initialPrompt.isEmpty ? null : _initialPrompt,
     );
 
     setState(() {

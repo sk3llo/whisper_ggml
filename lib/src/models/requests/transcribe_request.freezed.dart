@@ -29,6 +29,30 @@ mixin _$TranscribeRequest {
   bool get speedUp;
   Stream<String>? get realtimeStream;
 
+  /// Optional text passed to whisper.cpp as `whisper_full_params.initial_prompt`.
+  ///
+  /// Whisper uses this to bias decoding toward vocabulary, names, and
+  /// punctuation that appear in the prompt — useful for domain-specific
+  /// transcription (e.g. medical, legal, scripture, product names) where
+  /// the same words otherwise get misrecognised. Empty / null disables
+  /// biasing (matches whisper.cpp's default of `nullptr`).
+  ///
+  /// See OpenAI's transcription docs for guidance on prompt content.
+  String? get initialPrompt;
+
+  /// Sets `whisper_full_params.no_context` on the native side. Equivalent
+  /// to Python whisper's `condition_on_previous_text=False`.
+  ///
+  /// When `true`, whisper.cpp does NOT feed prior-segment transcripts
+  /// into the decoder as context. Useful for short single-utterance
+  /// transcription (e.g. verse recitation) where carry-over context
+  /// can bias the decoder toward hallucinated repetition or "tail of
+  /// utterance" attractors.
+  ///
+  /// Default `false` matches whisper.cpp's default and the behaviour
+  /// of every previous version of this package.
+  bool get noContext;
+
   /// Create a copy of TranscribeRequest
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -65,7 +89,11 @@ mixin _$TranscribeRequest {
             (identical(other.diarize, diarize) || other.diarize == diarize) &&
             (identical(other.speedUp, speedUp) || other.speedUp == speedUp) &&
             (identical(other.realtimeStream, realtimeStream) ||
-                other.realtimeStream == realtimeStream));
+                other.realtimeStream == realtimeStream) &&
+            (identical(other.initialPrompt, initialPrompt) ||
+                other.initialPrompt == initialPrompt) &&
+            (identical(other.noContext, noContext) ||
+                other.noContext == noContext));
   }
 
   @override
@@ -84,11 +112,13 @@ mixin _$TranscribeRequest {
       noFallback,
       diarize,
       speedUp,
-      realtimeStream);
+      realtimeStream,
+      initialPrompt,
+      noContext);
 
   @override
   String toString() {
-    return 'TranscribeRequest(audio: $audio, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, isRealtime: $isRealtime, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, diarize: $diarize, speedUp: $speedUp, realtimeStream: $realtimeStream)';
+    return 'TranscribeRequest(audio: $audio, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, isRealtime: $isRealtime, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, diarize: $diarize, speedUp: $speedUp, realtimeStream: $realtimeStream, initialPrompt: $initialPrompt, noContext: $noContext)';
   }
 }
 
@@ -112,7 +142,9 @@ abstract mixin class $TranscribeRequestCopyWith<$Res> {
       bool noFallback,
       bool diarize,
       bool speedUp,
-      Stream<String>? realtimeStream});
+      Stream<String>? realtimeStream,
+      String? initialPrompt,
+      bool noContext});
 }
 
 /// @nodoc
@@ -142,6 +174,8 @@ class _$TranscribeRequestCopyWithImpl<$Res>
     Object? diarize = null,
     Object? speedUp = null,
     Object? realtimeStream = freezed,
+    Object? initialPrompt = freezed,
+    Object? noContext = null,
   }) {
     return _then(_self.copyWith(
       audio: null == audio
@@ -200,6 +234,14 @@ class _$TranscribeRequestCopyWithImpl<$Res>
           ? _self.realtimeStream
           : realtimeStream // ignore: cast_nullable_to_non_nullable
               as Stream<String>?,
+      initialPrompt: freezed == initialPrompt
+          ? _self.initialPrompt
+          : initialPrompt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      noContext: null == noContext
+          ? _self.noContext
+          : noContext // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -311,7 +353,9 @@ extension TranscribeRequestPatterns on TranscribeRequest {
             bool noFallback,
             bool diarize,
             bool speedUp,
-            Stream<String>? realtimeStream)?
+            Stream<String>? realtimeStream,
+            String? initialPrompt,
+            bool noContext)?
         $default, {
     required TResult orElse(),
   }) {
@@ -332,7 +376,9 @@ extension TranscribeRequestPatterns on TranscribeRequest {
             _that.noFallback,
             _that.diarize,
             _that.speedUp,
-            _that.realtimeStream);
+            _that.realtimeStream,
+            _that.initialPrompt,
+            _that.noContext);
       case _:
         return orElse();
     }
@@ -367,7 +413,9 @@ extension TranscribeRequestPatterns on TranscribeRequest {
             bool noFallback,
             bool diarize,
             bool speedUp,
-            Stream<String>? realtimeStream)
+            Stream<String>? realtimeStream,
+            String? initialPrompt,
+            bool noContext)
         $default,
   ) {
     final _that = this;
@@ -387,7 +435,9 @@ extension TranscribeRequestPatterns on TranscribeRequest {
             _that.noFallback,
             _that.diarize,
             _that.speedUp,
-            _that.realtimeStream);
+            _that.realtimeStream,
+            _that.initialPrompt,
+            _that.noContext);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -421,7 +471,9 @@ extension TranscribeRequestPatterns on TranscribeRequest {
             bool noFallback,
             bool diarize,
             bool speedUp,
-            Stream<String>? realtimeStream)?
+            Stream<String>? realtimeStream,
+            String? initialPrompt,
+            bool noContext)?
         $default,
   ) {
     final _that = this;
@@ -441,7 +493,9 @@ extension TranscribeRequestPatterns on TranscribeRequest {
             _that.noFallback,
             _that.diarize,
             _that.speedUp,
-            _that.realtimeStream);
+            _that.realtimeStream,
+            _that.initialPrompt,
+            _that.noContext);
       case _:
         return null;
     }
@@ -465,7 +519,9 @@ class _TranscribeRequest extends TranscribeRequest {
       this.noFallback = false,
       this.diarize = false,
       this.speedUp = false,
-      this.realtimeStream = null})
+      this.realtimeStream = null,
+      this.initialPrompt = null,
+      this.noContext = false})
       : super._();
 
   @override
@@ -510,6 +566,34 @@ class _TranscribeRequest extends TranscribeRequest {
   @JsonKey()
   final Stream<String>? realtimeStream;
 
+  /// Optional text passed to whisper.cpp as `whisper_full_params.initial_prompt`.
+  ///
+  /// Whisper uses this to bias decoding toward vocabulary, names, and
+  /// punctuation that appear in the prompt — useful for domain-specific
+  /// transcription (e.g. medical, legal, scripture, product names) where
+  /// the same words otherwise get misrecognised. Empty / null disables
+  /// biasing (matches whisper.cpp's default of `nullptr`).
+  ///
+  /// See OpenAI's transcription docs for guidance on prompt content.
+  @override
+  @JsonKey()
+  final String? initialPrompt;
+
+  /// Sets `whisper_full_params.no_context` on the native side. Equivalent
+  /// to Python whisper's `condition_on_previous_text=False`.
+  ///
+  /// When `true`, whisper.cpp does NOT feed prior-segment transcripts
+  /// into the decoder as context. Useful for short single-utterance
+  /// transcription (e.g. verse recitation) where carry-over context
+  /// can bias the decoder toward hallucinated repetition or "tail of
+  /// utterance" attractors.
+  ///
+  /// Default `false` matches whisper.cpp's default and the behaviour
+  /// of every previous version of this package.
+  @override
+  @JsonKey()
+  final bool noContext;
+
   /// Create a copy of TranscribeRequest
   /// with the given fields replaced by the non-null parameter values.
   @override
@@ -546,7 +630,11 @@ class _TranscribeRequest extends TranscribeRequest {
             (identical(other.diarize, diarize) || other.diarize == diarize) &&
             (identical(other.speedUp, speedUp) || other.speedUp == speedUp) &&
             (identical(other.realtimeStream, realtimeStream) ||
-                other.realtimeStream == realtimeStream));
+                other.realtimeStream == realtimeStream) &&
+            (identical(other.initialPrompt, initialPrompt) ||
+                other.initialPrompt == initialPrompt) &&
+            (identical(other.noContext, noContext) ||
+                other.noContext == noContext));
   }
 
   @override
@@ -565,11 +653,13 @@ class _TranscribeRequest extends TranscribeRequest {
       noFallback,
       diarize,
       speedUp,
-      realtimeStream);
+      realtimeStream,
+      initialPrompt,
+      noContext);
 
   @override
   String toString() {
-    return 'TranscribeRequest(audio: $audio, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, isRealtime: $isRealtime, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, diarize: $diarize, speedUp: $speedUp, realtimeStream: $realtimeStream)';
+    return 'TranscribeRequest(audio: $audio, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, isRealtime: $isRealtime, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, diarize: $diarize, speedUp: $speedUp, realtimeStream: $realtimeStream, initialPrompt: $initialPrompt, noContext: $noContext)';
   }
 }
 
@@ -595,7 +685,9 @@ abstract mixin class _$TranscribeRequestCopyWith<$Res>
       bool noFallback,
       bool diarize,
       bool speedUp,
-      Stream<String>? realtimeStream});
+      Stream<String>? realtimeStream,
+      String? initialPrompt,
+      bool noContext});
 }
 
 /// @nodoc
@@ -625,6 +717,8 @@ class __$TranscribeRequestCopyWithImpl<$Res>
     Object? diarize = null,
     Object? speedUp = null,
     Object? realtimeStream = freezed,
+    Object? initialPrompt = freezed,
+    Object? noContext = null,
   }) {
     return _then(_TranscribeRequest(
       audio: null == audio
@@ -683,6 +777,14 @@ class __$TranscribeRequestCopyWithImpl<$Res>
           ? _self.realtimeStream
           : realtimeStream // ignore: cast_nullable_to_non_nullable
               as Stream<String>?,
+      initialPrompt: freezed == initialPrompt
+          ? _self.initialPrompt
+          : initialPrompt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      noContext: null == noContext
+          ? _self.noContext
+          : noContext // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }

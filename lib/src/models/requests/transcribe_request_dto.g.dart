@@ -23,6 +23,8 @@ _TranscribeRequestDto _$TranscribeRequestDtoFromJson(
       isRealtime: json['is_realtime'] as bool,
       diarize: json['diarize'] as bool,
       speedUp: json['speed_up'] as bool,
+      initialPrompt: json['initial_prompt'] as String?,
+      noContext: json['no_context'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$TranscribeRequestDtoToJson(
@@ -42,4 +44,6 @@ Map<String, dynamic> _$TranscribeRequestDtoToJson(
       'is_realtime': instance.isRealtime,
       'diarize': instance.diarize,
       'speed_up': instance.speedUp,
+      'initial_prompt': instance.initialPrompt,
+      'no_context': instance.noContext,
     };

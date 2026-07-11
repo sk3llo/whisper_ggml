@@ -57,6 +57,8 @@ struct whisper_params
     bool print_progress = false;
     bool no_timestamps = false;
     bool split_on_word = false;
+    // whisper_full_params.no_context: disable cross-segment text conditioning.
+    bool no_context = false;
 
     std::string language = "auto";
     std::string prompt;
@@ -87,6 +89,16 @@ json transcribe(json jsonBody) noexcept
     params.audio = jsonBody["audio"];
     params.split_on_word = jsonBody["split_on_word"];
     params.diarize = jsonBody["diarize"];
+
+    // Optional fields: absent / null / empty leaves whisper.cpp defaults.
+    if (jsonBody.contains("initial_prompt") && jsonBody["initial_prompt"].is_string())
+    {
+        params.prompt = jsonBody["initial_prompt"].get<std::string>();
+    }
+    if (jsonBody.contains("no_context") && jsonBody["no_context"].is_boolean())
+    {
+        params.no_context = jsonBody["no_context"].get<bool>();
+    }
     json jsonResult;
     jsonResult["@type"] = "transcribe";
 
@@ -182,6 +194,12 @@ json transcribe(json jsonBody) noexcept
         wparams.language = params.language.c_str();
         wparams.n_threads = params.n_threads;
         wparams.split_on_word = params.split_on_word;
+
+        // params.prompt outlives whisper_full(), so the pointer stays valid.
+        if (!params.prompt.empty()) {
+            wparams.initial_prompt = params.prompt.c_str();
+        }
+        wparams.no_context = params.no_context;
 
         if (params.split_on_word) {
             wparams.max_len = 1;

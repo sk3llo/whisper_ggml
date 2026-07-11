@@ -20,6 +20,8 @@ class WhisperController {
     required String audioPath,
     String lang = 'en',
     bool diarize = false,
+    String? initialPrompt,
+    bool noContext = false,
   }) async {
     await initModel(model);
 
@@ -39,6 +41,8 @@ class WhisperController {
           splitOnWord: splitWords,
           isRealtime: true,
           diarize: diarize,
+          initialPrompt: initialPrompt,
+          noContext: noContext,
         ),
         modelPath: _modelPath,
       );
