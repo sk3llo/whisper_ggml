@@ -113,6 +113,12 @@ class WhisperController {
   }
 
   static Future<String> getModelDir() async {
+    if (!Platform.isAndroid && !Platform.isIOS && !Platform.isMacOS) {
+      throw UnsupportedError(
+        'whisper_ggml supports Android, iOS, and macOS. '
+        '${Platform.operatingSystem} has no native whisper implementation.',
+      );
+    }
     final Directory libraryDirectory = Platform.isAndroid
         ? await getApplicationSupportDirectory()
         : await getLibraryDirectory();
