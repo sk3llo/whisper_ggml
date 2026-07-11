@@ -57,12 +57,7 @@ struct whisper_params
     bool print_progress = false;
     bool no_timestamps = false;
     bool split_on_word = false;
-    // When true, set whisper_full_params.no_context = true so whisper.cpp
-    // does NOT feed prior-segment transcripts into the decoder as context.
-    // Mirrors Python whisper's `condition_on_previous_text=False`. Useful
-    // for short single-utterance transcription (e.g. verse recitation)
-    // where carry-over context biases the decoder toward hallucinated
-    // repetition / "tail of utterance" attractors.
+    // whisper_full_params.no_context: disable cross-segment text conditioning.
     bool no_context = false;
 
     std::string language = "auto";
@@ -95,17 +90,11 @@ json transcribe(json jsonBody) noexcept
     params.split_on_word = jsonBody["split_on_word"];
     params.diarize = jsonBody["diarize"];
 
-    // Optional initial prompt to bias decoding (whisper_full_params.initial_prompt).
-    // Absent / null / empty -> leave default (nullptr) for bit-for-bit compatibility
-    // with callers that don't set it.
+    // Optional fields: absent / null / empty leaves whisper.cpp defaults.
     if (jsonBody.contains("initial_prompt") && jsonBody["initial_prompt"].is_string())
     {
         params.prompt = jsonBody["initial_prompt"].get<std::string>();
     }
-
-    // Optional no_context flag (whisper_full_params.no_context). Equivalent to
-    // Python whisper's `condition_on_previous_text=False`. Absent / false ->
-    // leave default (false) for bit-for-bit compatibility with old callers.
     if (jsonBody.contains("no_context") && jsonBody["no_context"].is_boolean())
     {
         params.no_context = jsonBody["no_context"].get<bool>();
@@ -206,18 +195,10 @@ json transcribe(json jsonBody) noexcept
         wparams.n_threads = params.n_threads;
         wparams.split_on_word = params.split_on_word;
 
-        // initial_prompt is a `const char *` that whisper.cpp reads during
-        // decoding. The backing std::string `params.prompt` is stack-local
-        // here and outlives the whisper_full() call below, so the pointer
-        // is valid for the full inference. Leave nullptr (default) when
-        // empty so behaviour is unchanged for callers that don't set it.
+        // params.prompt outlives whisper_full(), so the pointer stays valid.
         if (!params.prompt.empty()) {
             wparams.initial_prompt = params.prompt.c_str();
         }
-
-        // Forward the no_context flag straight to whisper.cpp. Default in
-        // whisper_full_default_params() is false; flipping to true disables
-        // cross-segment prior-text conditioning.
         wparams.no_context = params.no_context;
 
         if (params.split_on_word) {

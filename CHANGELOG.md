@@ -2,8 +2,10 @@
 
 * Added `initialPrompt` parameter to `TranscribeRequest` and `WhisperController.transcribe`
 * Wired `initial_prompt` through to `whisper_full_params.initial_prompt` on Android, iOS, and macOS to bias decoding toward domain-specific vocabulary, names, and punctuation
-* Empty / null prompt leaves the parameter at whisper.cpp's default (`nullptr`), so existing callers see no behaviour change
+* Added `noContext` parameter (`whisper_full_params.no_context`, equivalent to Python whisper's `condition_on_previous_text=False`) on Android, iOS, and macOS to disable cross-segment text conditioning — helps against hallucinated repetition on short utterances
+* Empty / null prompt and `noContext: false` leave whisper.cpp defaults, so existing callers see no behaviour change
 * Removed unused `flutter_riverpod` dependency, which was constraining consumers to riverpod 2.x even though the package never imported it
+* Fixed example app crash on macOS when transcribing the bundled jfk.wav (temporary directory did not exist)
 
 ## 1.7.0
 

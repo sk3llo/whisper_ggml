@@ -20,6 +20,8 @@ dependencies:
   path_provider: ^2.1.5
 
 dev_dependencies:
+  flutter_test:
+    sdk: flutter
   build_runner: ^2.4.15
   ffigen: ^18.1.0
   freezed: ^3.0.6

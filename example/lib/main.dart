@@ -47,9 +47,10 @@ class _MyHomePageState extends State<MyHomePage> {
   /// Optional initial prompt that biases Whisper decoding toward specific
   /// vocabulary, names, and punctuation. Useful for domain-specific
   /// transcription. Empty string disables biasing (matches whisper.cpp's
-  /// default of nullptr). Edit this string to experiment.
-  static const String _initialPrompt =
-      'Ask not what your country can do for you';
+  /// default of nullptr). Set to e.g. 'Ask not what your country can do
+  /// for you' to experiment. Note that decoding also mimics the prompt's
+  /// style: an unpunctuated prompt tends to produce unpunctuated output.
+  static const String _initialPrompt = '';
 
   @override
   void initState() {
@@ -177,6 +178,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> transcribeJfk() async {
     final Directory tempDir = await getTemporaryDirectory();
+    // On macOS the sandboxed Caches directory may not exist yet.
+    await tempDir.create(recursive: true);
     final asset = await rootBundle.load('assets/jfk.wav');
     final String jfkPath = "${tempDir.path}/jfk.wav";
     final File convertedFile = await File(jfkPath).writeAsBytes(
