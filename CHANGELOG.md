@@ -1,3 +1,7 @@
+## 1.9.1
+
+* Fixed a native crash (SIGABRT) when whisper emits text containing invalid UTF-8 — e.g. a token boundary splitting a multi-byte character, common with non-English audio. Invalid bytes are now replaced with U+FFFD instead of aborting the app ([#21](https://github.com/sk3llo/whisper_ggml/issues/21))
+
 ## 1.9.0
 
 * Added live (streaming) transcription: `WhisperController.transcribeLive` takes a stream of 16 kHz mono PCM16 audio and returns a `WhisperLiveSession` that emits progressively refined partial transcripts while the user speaks; `stop()` returns the final text
