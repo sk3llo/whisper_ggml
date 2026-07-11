@@ -1,3 +1,8 @@
+## 1.9.2
+
+* Removed the `windows` and `linux` platform declarations — neither has a native whisper implementation, and pub.dev advertised support that failed at runtime. Unsupported platforms now throw a clear `UnsupportedError` ([#20](https://github.com/sk3llo/whisper_ggml/issues/20))
+* Ship consumer ProGuard rules so Android release builds no longer strip the bundled ffmpeg-kit classes, which broke plugin registration and surfaced as `channel-error` on unrelated plugins like path_provider ([#16](https://github.com/sk3llo/whisper_ggml/issues/16))
+
 ## 1.9.1
 
 * Fixed a native crash (SIGABRT) when whisper emits text containing invalid UTF-8 — e.g. a token boundary splitting a multi-byte character, common with non-English audio. Invalid bytes are now replaced with U+FFFD instead of aborting the app ([#21](https://github.com/sk3llo/whisper_ggml/issues/21))
