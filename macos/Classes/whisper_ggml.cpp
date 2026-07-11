@@ -26,7 +26,11 @@ void print(std::string value)
 
 char *jsonToChar(json jsonData)
 {
-    std::string result = jsonData.dump();
+    // Whisper can emit text that splits a multi-byte UTF-8 character at a
+    // token boundary; dump() would throw type_error.316 and abort the app
+    // across the FFI boundary. Replace invalid bytes with U+FFFD instead.
+    std::string result =
+        jsonData.dump(-1, ' ', false, json::error_handler_t::replace);
     // malloc, not new[]: callers across the FFI boundary free this
     // with the C allocator (Dart's malloc.free).
     char *ch = (char *)malloc(result.size() + 1);
