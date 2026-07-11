@@ -44,6 +44,10 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isProcessing = false;
   bool isProcessingFile = false;
   bool isListening = false;
+
+  /// Live mode shows partial transcripts while speaking; classic mode
+  /// records to a file and transcribes once recording stops.
+  bool liveMode = true;
   WhisperLiveSession? liveSession;
 
   /// Optional initial prompt that biases Whisper decoding toward specific
@@ -66,6 +70,17 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text('Whisper ggml example'),
+        actions: [
+          Text(liveMode ? 'Live' : 'Classic'),
+          Switch(
+            value: liveMode,
+            // Locked while a recording is in progress.
+            onChanged: isListening || isProcessing
+                ? null
+                : (value) => setState(() => liveMode = value),
+          ),
+          const SizedBox(width: 12),
+        ],
       ),
       body: SafeArea(
         child: Padding(
@@ -130,11 +145,14 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  /// Live transcription: transcripts appear while you speak instead of
-  /// after recording stops.
   Future<void> record() async {
     if (!await audioRecorder.hasPermission()) return;
+    return liveMode ? recordLive() : recordClassic();
+  }
 
+  /// Live transcription: transcripts appear while you speak instead of
+  /// after recording stops.
+  Future<void> recordLive() async {
     if (isListening) {
       debugPrint('Stopping live transcription.');
       await audioRecorder.stop();
@@ -181,6 +199,52 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         isListening = true;
       });
+    }
+  }
+
+  /// Classic transcription: records to a file, then transcribes it once
+  /// recording stops.
+  Future<void> recordClassic() async {
+    if (isListening) {
+      final audioPath = await audioRecorder.stop();
+
+      if (audioPath == null) {
+        debugPrint('No recording exists.');
+        return;
+      }
+      debugPrint('Stopped listening.');
+
+      setState(() {
+        isListening = false;
+        isProcessing = true;
+      });
+
+      final result = await whisperController.transcribe(
+        model: model,
+        audioPath: audioPath,
+        lang: 'en',
+        initialPrompt: _initialPrompt.isEmpty ? null : _initialPrompt,
+      );
+
+      if (mounted) {
+        setState(() {
+          isProcessing = false;
+          if (result?.transcription.text != null) {
+            transcribedText = result!.transcription.text;
+          }
+        });
+      }
+    } else {
+      debugPrint('Started listening.');
+
+      setState(() {
+        isListening = true;
+      });
+
+      final Directory appDirectory = await getTemporaryDirectory();
+      await appDirectory.create(recursive: true);
+      await audioRecorder.start(const RecordConfig(),
+          path: '${appDirectory.path}/test.m4a');
     }
   }
 
