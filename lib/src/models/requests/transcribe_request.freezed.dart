@@ -53,6 +53,19 @@ mixin _$TranscribeRequest {
   /// of every previous version of this package.
   bool get noContext;
 
+  /// Sets `whisper_full_params.suppress_non_speech_tokens` on the
+  /// native side.
+  ///
+  /// When `true`, whisper does not emit non-speech annotation tokens
+  /// such as `[BLANK_AUDIO]`, `[Music]`, or bracketed sound effects,
+  /// which it otherwise produces for silence and background noise.
+  /// Recommended for live transcription, where trailing silence is
+  /// common. Side effect: legitimate brackets and parentheses in
+  /// dictated text are suppressed too.
+  ///
+  /// Default `false` matches whisper.cpp's default.
+  bool get suppressNonSpeechTokens;
+
   /// Create a copy of TranscribeRequest
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -93,7 +106,10 @@ mixin _$TranscribeRequest {
             (identical(other.initialPrompt, initialPrompt) ||
                 other.initialPrompt == initialPrompt) &&
             (identical(other.noContext, noContext) ||
-                other.noContext == noContext));
+                other.noContext == noContext) &&
+            (identical(
+                    other.suppressNonSpeechTokens, suppressNonSpeechTokens) ||
+                other.suppressNonSpeechTokens == suppressNonSpeechTokens));
   }
 
   @override
@@ -114,11 +130,12 @@ mixin _$TranscribeRequest {
       speedUp,
       realtimeStream,
       initialPrompt,
-      noContext);
+      noContext,
+      suppressNonSpeechTokens);
 
   @override
   String toString() {
-    return 'TranscribeRequest(audio: $audio, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, isRealtime: $isRealtime, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, diarize: $diarize, speedUp: $speedUp, realtimeStream: $realtimeStream, initialPrompt: $initialPrompt, noContext: $noContext)';
+    return 'TranscribeRequest(audio: $audio, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, isRealtime: $isRealtime, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, diarize: $diarize, speedUp: $speedUp, realtimeStream: $realtimeStream, initialPrompt: $initialPrompt, noContext: $noContext, suppressNonSpeechTokens: $suppressNonSpeechTokens)';
   }
 }
 
@@ -144,7 +161,8 @@ abstract mixin class $TranscribeRequestCopyWith<$Res> {
       bool speedUp,
       Stream<String>? realtimeStream,
       String? initialPrompt,
-      bool noContext});
+      bool noContext,
+      bool suppressNonSpeechTokens});
 }
 
 /// @nodoc
@@ -176,6 +194,7 @@ class _$TranscribeRequestCopyWithImpl<$Res>
     Object? realtimeStream = freezed,
     Object? initialPrompt = freezed,
     Object? noContext = null,
+    Object? suppressNonSpeechTokens = null,
   }) {
     return _then(_self.copyWith(
       audio: null == audio
@@ -241,6 +260,10 @@ class _$TranscribeRequestCopyWithImpl<$Res>
       noContext: null == noContext
           ? _self.noContext
           : noContext // ignore: cast_nullable_to_non_nullable
+              as bool,
+      suppressNonSpeechTokens: null == suppressNonSpeechTokens
+          ? _self.suppressNonSpeechTokens
+          : suppressNonSpeechTokens // ignore: cast_nullable_to_non_nullable
               as bool,
     ));
   }
@@ -355,7 +378,8 @@ extension TranscribeRequestPatterns on TranscribeRequest {
             bool speedUp,
             Stream<String>? realtimeStream,
             String? initialPrompt,
-            bool noContext)?
+            bool noContext,
+            bool suppressNonSpeechTokens)?
         $default, {
     required TResult orElse(),
   }) {
@@ -378,7 +402,8 @@ extension TranscribeRequestPatterns on TranscribeRequest {
             _that.speedUp,
             _that.realtimeStream,
             _that.initialPrompt,
-            _that.noContext);
+            _that.noContext,
+            _that.suppressNonSpeechTokens);
       case _:
         return orElse();
     }
@@ -415,7 +440,8 @@ extension TranscribeRequestPatterns on TranscribeRequest {
             bool speedUp,
             Stream<String>? realtimeStream,
             String? initialPrompt,
-            bool noContext)
+            bool noContext,
+            bool suppressNonSpeechTokens)
         $default,
   ) {
     final _that = this;
@@ -437,7 +463,8 @@ extension TranscribeRequestPatterns on TranscribeRequest {
             _that.speedUp,
             _that.realtimeStream,
             _that.initialPrompt,
-            _that.noContext);
+            _that.noContext,
+            _that.suppressNonSpeechTokens);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -473,7 +500,8 @@ extension TranscribeRequestPatterns on TranscribeRequest {
             bool speedUp,
             Stream<String>? realtimeStream,
             String? initialPrompt,
-            bool noContext)?
+            bool noContext,
+            bool suppressNonSpeechTokens)?
         $default,
   ) {
     final _that = this;
@@ -495,7 +523,8 @@ extension TranscribeRequestPatterns on TranscribeRequest {
             _that.speedUp,
             _that.realtimeStream,
             _that.initialPrompt,
-            _that.noContext);
+            _that.noContext,
+            _that.suppressNonSpeechTokens);
       case _:
         return null;
     }
@@ -521,7 +550,8 @@ class _TranscribeRequest extends TranscribeRequest {
       this.speedUp = false,
       this.realtimeStream = null,
       this.initialPrompt = null,
-      this.noContext = false})
+      this.noContext = false,
+      this.suppressNonSpeechTokens = false})
       : super._();
 
   @override
@@ -594,6 +624,21 @@ class _TranscribeRequest extends TranscribeRequest {
   @JsonKey()
   final bool noContext;
 
+  /// Sets `whisper_full_params.suppress_non_speech_tokens` on the
+  /// native side.
+  ///
+  /// When `true`, whisper does not emit non-speech annotation tokens
+  /// such as `[BLANK_AUDIO]`, `[Music]`, or bracketed sound effects,
+  /// which it otherwise produces for silence and background noise.
+  /// Recommended for live transcription, where trailing silence is
+  /// common. Side effect: legitimate brackets and parentheses in
+  /// dictated text are suppressed too.
+  ///
+  /// Default `false` matches whisper.cpp's default.
+  @override
+  @JsonKey()
+  final bool suppressNonSpeechTokens;
+
   /// Create a copy of TranscribeRequest
   /// with the given fields replaced by the non-null parameter values.
   @override
@@ -634,7 +679,10 @@ class _TranscribeRequest extends TranscribeRequest {
             (identical(other.initialPrompt, initialPrompt) ||
                 other.initialPrompt == initialPrompt) &&
             (identical(other.noContext, noContext) ||
-                other.noContext == noContext));
+                other.noContext == noContext) &&
+            (identical(
+                    other.suppressNonSpeechTokens, suppressNonSpeechTokens) ||
+                other.suppressNonSpeechTokens == suppressNonSpeechTokens));
   }
 
   @override
@@ -655,11 +703,12 @@ class _TranscribeRequest extends TranscribeRequest {
       speedUp,
       realtimeStream,
       initialPrompt,
-      noContext);
+      noContext,
+      suppressNonSpeechTokens);
 
   @override
   String toString() {
-    return 'TranscribeRequest(audio: $audio, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, isRealtime: $isRealtime, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, diarize: $diarize, speedUp: $speedUp, realtimeStream: $realtimeStream, initialPrompt: $initialPrompt, noContext: $noContext)';
+    return 'TranscribeRequest(audio: $audio, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, isRealtime: $isRealtime, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, diarize: $diarize, speedUp: $speedUp, realtimeStream: $realtimeStream, initialPrompt: $initialPrompt, noContext: $noContext, suppressNonSpeechTokens: $suppressNonSpeechTokens)';
   }
 }
 
@@ -687,7 +736,8 @@ abstract mixin class _$TranscribeRequestCopyWith<$Res>
       bool speedUp,
       Stream<String>? realtimeStream,
       String? initialPrompt,
-      bool noContext});
+      bool noContext,
+      bool suppressNonSpeechTokens});
 }
 
 /// @nodoc
@@ -719,6 +769,7 @@ class __$TranscribeRequestCopyWithImpl<$Res>
     Object? realtimeStream = freezed,
     Object? initialPrompt = freezed,
     Object? noContext = null,
+    Object? suppressNonSpeechTokens = null,
   }) {
     return _then(_TranscribeRequest(
       audio: null == audio
@@ -784,6 +835,10 @@ class __$TranscribeRequestCopyWithImpl<$Res>
       noContext: null == noContext
           ? _self.noContext
           : noContext // ignore: cast_nullable_to_non_nullable
+              as bool,
+      suppressNonSpeechTokens: null == suppressNonSpeechTokens
+          ? _self.suppressNonSpeechTokens
+          : suppressNonSpeechTokens // ignore: cast_nullable_to_non_nullable
               as bool,
     ));
   }

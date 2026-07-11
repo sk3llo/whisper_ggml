@@ -56,6 +56,8 @@ class Whisper {
           json.decode(res.toDartString()) as Map<String, dynamic>;
 
       malloc.free(data);
+      // Native responses are malloc'd specifically so this free is valid.
+      malloc.free(res);
       return result;
     });
   }

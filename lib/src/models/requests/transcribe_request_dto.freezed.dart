@@ -41,6 +41,8 @@ mixin _$TranscribeRequestDto {
   String? get initialPrompt;
   @JsonKey(name: 'no_context')
   bool get noContext;
+  @JsonKey(name: 'suppress_non_speech_tokens')
+  bool get suppressNonSpeechTokens;
 
   /// Create a copy of TranscribeRequestDto
   /// with the given fields replaced by the non-null parameter values.
@@ -84,7 +86,10 @@ mixin _$TranscribeRequestDto {
             (identical(other.initialPrompt, initialPrompt) ||
                 other.initialPrompt == initialPrompt) &&
             (identical(other.noContext, noContext) ||
-                other.noContext == noContext));
+                other.noContext == noContext) &&
+            (identical(
+                    other.suppressNonSpeechTokens, suppressNonSpeechTokens) ||
+                other.suppressNonSpeechTokens == suppressNonSpeechTokens));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -106,11 +111,12 @@ mixin _$TranscribeRequestDto {
       diarize,
       speedUp,
       initialPrompt,
-      noContext);
+      noContext,
+      suppressNonSpeechTokens);
 
   @override
   String toString() {
-    return 'TranscribeRequestDto(audio: $audio, model: $model, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, isRealtime: $isRealtime, diarize: $diarize, speedUp: $speedUp, initialPrompt: $initialPrompt, noContext: $noContext)';
+    return 'TranscribeRequestDto(audio: $audio, model: $model, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, isRealtime: $isRealtime, diarize: $diarize, speedUp: $speedUp, initialPrompt: $initialPrompt, noContext: $noContext, suppressNonSpeechTokens: $suppressNonSpeechTokens)';
   }
 }
 
@@ -136,7 +142,9 @@ abstract mixin class $TranscribeRequestDtoCopyWith<$Res> {
       bool diarize,
       @JsonKey(name: 'speed_up') bool speedUp,
       @JsonKey(name: 'initial_prompt') String? initialPrompt,
-      @JsonKey(name: 'no_context') bool noContext});
+      @JsonKey(name: 'no_context') bool noContext,
+      @JsonKey(name: 'suppress_non_speech_tokens')
+      bool suppressNonSpeechTokens});
 }
 
 /// @nodoc
@@ -168,6 +176,7 @@ class _$TranscribeRequestDtoCopyWithImpl<$Res>
     Object? speedUp = null,
     Object? initialPrompt = freezed,
     Object? noContext = null,
+    Object? suppressNonSpeechTokens = null,
   }) {
     return _then(_self.copyWith(
       audio: null == audio
@@ -233,6 +242,10 @@ class _$TranscribeRequestDtoCopyWithImpl<$Res>
       noContext: null == noContext
           ? _self.noContext
           : noContext // ignore: cast_nullable_to_non_nullable
+              as bool,
+      suppressNonSpeechTokens: null == suppressNonSpeechTokens
+          ? _self.suppressNonSpeechTokens
+          : suppressNonSpeechTokens // ignore: cast_nullable_to_non_nullable
               as bool,
     ));
   }
@@ -347,7 +360,9 @@ extension TranscribeRequestDtoPatterns on TranscribeRequestDto {
             bool diarize,
             @JsonKey(name: 'speed_up') bool speedUp,
             @JsonKey(name: 'initial_prompt') String? initialPrompt,
-            @JsonKey(name: 'no_context') bool noContext)?
+            @JsonKey(name: 'no_context') bool noContext,
+            @JsonKey(name: 'suppress_non_speech_tokens')
+            bool suppressNonSpeechTokens)?
         $default, {
     required TResult orElse(),
   }) {
@@ -370,7 +385,8 @@ extension TranscribeRequestDtoPatterns on TranscribeRequestDto {
             _that.diarize,
             _that.speedUp,
             _that.initialPrompt,
-            _that.noContext);
+            _that.noContext,
+            _that.suppressNonSpeechTokens);
       case _:
         return orElse();
     }
@@ -407,7 +423,9 @@ extension TranscribeRequestDtoPatterns on TranscribeRequestDto {
             bool diarize,
             @JsonKey(name: 'speed_up') bool speedUp,
             @JsonKey(name: 'initial_prompt') String? initialPrompt,
-            @JsonKey(name: 'no_context') bool noContext)
+            @JsonKey(name: 'no_context') bool noContext,
+            @JsonKey(name: 'suppress_non_speech_tokens')
+            bool suppressNonSpeechTokens)
         $default,
   ) {
     final _that = this;
@@ -429,7 +447,8 @@ extension TranscribeRequestDtoPatterns on TranscribeRequestDto {
             _that.diarize,
             _that.speedUp,
             _that.initialPrompt,
-            _that.noContext);
+            _that.noContext,
+            _that.suppressNonSpeechTokens);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -465,7 +484,9 @@ extension TranscribeRequestDtoPatterns on TranscribeRequestDto {
             bool diarize,
             @JsonKey(name: 'speed_up') bool speedUp,
             @JsonKey(name: 'initial_prompt') String? initialPrompt,
-            @JsonKey(name: 'no_context') bool noContext)?
+            @JsonKey(name: 'no_context') bool noContext,
+            @JsonKey(name: 'suppress_non_speech_tokens')
+            bool suppressNonSpeechTokens)?
         $default,
   ) {
     final _that = this;
@@ -487,7 +508,8 @@ extension TranscribeRequestDtoPatterns on TranscribeRequestDto {
             _that.diarize,
             _that.speedUp,
             _that.initialPrompt,
-            _that.noContext);
+            _that.noContext,
+            _that.suppressNonSpeechTokens);
       case _:
         return null;
     }
@@ -513,7 +535,9 @@ class _TranscribeRequestDto extends TranscribeRequestDto {
       required this.diarize,
       @JsonKey(name: 'speed_up') required this.speedUp,
       @JsonKey(name: 'initial_prompt') this.initialPrompt,
-      @JsonKey(name: 'no_context') this.noContext = false})
+      @JsonKey(name: 'no_context') this.noContext = false,
+      @JsonKey(name: 'suppress_non_speech_tokens')
+      this.suppressNonSpeechTokens = false})
       : super._();
   factory _TranscribeRequestDto.fromJson(Map<String, dynamic> json) =>
       _$TranscribeRequestDtoFromJson(json);
@@ -561,6 +585,9 @@ class _TranscribeRequestDto extends TranscribeRequestDto {
   @override
   @JsonKey(name: 'no_context')
   final bool noContext;
+  @override
+  @JsonKey(name: 'suppress_non_speech_tokens')
+  final bool suppressNonSpeechTokens;
 
   /// Create a copy of TranscribeRequestDto
   /// with the given fields replaced by the non-null parameter values.
@@ -609,7 +636,10 @@ class _TranscribeRequestDto extends TranscribeRequestDto {
             (identical(other.initialPrompt, initialPrompt) ||
                 other.initialPrompt == initialPrompt) &&
             (identical(other.noContext, noContext) ||
-                other.noContext == noContext));
+                other.noContext == noContext) &&
+            (identical(
+                    other.suppressNonSpeechTokens, suppressNonSpeechTokens) ||
+                other.suppressNonSpeechTokens == suppressNonSpeechTokens));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -631,11 +661,12 @@ class _TranscribeRequestDto extends TranscribeRequestDto {
       diarize,
       speedUp,
       initialPrompt,
-      noContext);
+      noContext,
+      suppressNonSpeechTokens);
 
   @override
   String toString() {
-    return 'TranscribeRequestDto(audio: $audio, model: $model, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, isRealtime: $isRealtime, diarize: $diarize, speedUp: $speedUp, initialPrompt: $initialPrompt, noContext: $noContext)';
+    return 'TranscribeRequestDto(audio: $audio, model: $model, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, isRealtime: $isRealtime, diarize: $diarize, speedUp: $speedUp, initialPrompt: $initialPrompt, noContext: $noContext, suppressNonSpeechTokens: $suppressNonSpeechTokens)';
   }
 }
 
@@ -663,7 +694,9 @@ abstract mixin class _$TranscribeRequestDtoCopyWith<$Res>
       bool diarize,
       @JsonKey(name: 'speed_up') bool speedUp,
       @JsonKey(name: 'initial_prompt') String? initialPrompt,
-      @JsonKey(name: 'no_context') bool noContext});
+      @JsonKey(name: 'no_context') bool noContext,
+      @JsonKey(name: 'suppress_non_speech_tokens')
+      bool suppressNonSpeechTokens});
 }
 
 /// @nodoc
@@ -695,6 +728,7 @@ class __$TranscribeRequestDtoCopyWithImpl<$Res>
     Object? speedUp = null,
     Object? initialPrompt = freezed,
     Object? noContext = null,
+    Object? suppressNonSpeechTokens = null,
   }) {
     return _then(_TranscribeRequestDto(
       audio: null == audio
@@ -760,6 +794,10 @@ class __$TranscribeRequestDtoCopyWithImpl<$Res>
       noContext: null == noContext
           ? _self.noContext
           : noContext // ignore: cast_nullable_to_non_nullable
+              as bool,
+      suppressNonSpeechTokens: null == suppressNonSpeechTokens
+          ? _self.suppressNonSpeechTokens
+          : suppressNonSpeechTokens // ignore: cast_nullable_to_non_nullable
               as bool,
     ));
   }
