@@ -1,4 +1,4 @@
-## Unreleased
+## 1.8.0
 
 * Added `initialPrompt` parameter to `TranscribeRequest` and `WhisperController.transcribe`
 * Wired `initial_prompt` through to `whisper_full_params.initial_prompt` on Android, iOS, and macOS to bias decoding toward domain-specific vocabulary, names, and punctuation

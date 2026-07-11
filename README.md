@@ -6,7 +6,7 @@ _OpenAI Whisper ASR (Automatic Speech Recognition) for Flutter using [Whisper.cp
 
 <p align="center">
   <a href="https://pub.dev/packages/whisper_ggml">
-     <img src="https://img.shields.io/badge/pub-1.7.0-blue?logo=dart" alt="pub">
+     <img src="https://img.shields.io/badge/pub-1.8.0-blue?logo=dart" alt="pub">
   </a>
   <a href="https://buymeacoffee.com/sk3llo" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="21" width="114"></a>
 </p>
@@ -51,7 +51,7 @@ To use this library in your Flutter project, follow these steps:
 
 ```yaml
 dependencies:
-  whisper_ggml: ^1.7.0
+  whisper_ggml: ^1.8.0
 ```
 
 2. Run `flutter pub get` to install the package.
