@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <string>
 #include <thread>
+#include <mutex>
 #include <vector>
 #include <cmath>
 #include <iostream>
@@ -299,5 +300,188 @@ extern "C"
             jsonResult["message"] = e.what();
             return jsonToChar(jsonResult);
         }
+    }
+}
+// ---------------------------------------------------------------------------
+// Live (streaming) transcription.
+//
+// Unlike request()/transcribe(), which load the model on every call, a stream
+// keeps one whisper_context alive for the whole session:
+//
+//   stream_start(json)          -> loads the model, resets state
+//   stream_feed(pcm, n)         -> appends 16 kHz mono float samples; re-runs
+//                                  inference when >= ~1.5 s of new audio has
+//                                  accumulated and returns the partial text
+//   stream_stop()               -> final text, frees the context
+//
+// Partials re-decode the whole current window with no_context = true, so a
+// wrong early partial does not condition later ones. When the window grows
+// past ~25 s its text is committed and the buffer restarts, keeping memory
+// and inference time bounded (a word straddling the commit boundary may be
+// clipped — acceptable for a draft).
+// ---------------------------------------------------------------------------
+
+struct whisper_stream_state
+{
+    struct whisper_context *ctx = nullptr;
+    std::vector<float> pcmf32;   // samples of the current window
+    size_t n_transcribed = 0;    // window samples covered by the last run
+    std::string committed;       // text of windows already committed
+    std::string last_text;       // text of the current window's last run
+    std::string language = "en";
+    std::string prompt;
+    int n_threads = 4;
+    bool translate = false;
+    std::mutex mutex;
+};
+
+static whisper_stream_state g_stream;
+
+static const size_t STREAM_STEP_SAMPLES   = (size_t)(1.5 * WHISPER_SAMPLE_RATE);
+static const size_t STREAM_COMMIT_SAMPLES = (size_t)(25.0 * WHISPER_SAMPLE_RATE);
+
+// Runs whisper_full over the current window. Caller must hold g_stream.mutex.
+static json stream_run_inference()
+{
+    json result;
+    result["@type"] = "streamPartial";
+
+    whisper_full_params wparams = whisper_full_default_params(WHISPER_SAMPLING_GREEDY);
+    wparams.print_realtime   = false;
+    wparams.print_progress   = false;
+    wparams.print_timestamps = false;
+    wparams.translate        = g_stream.translate;
+    wparams.language         = g_stream.language.c_str();
+    wparams.n_threads        = g_stream.n_threads;
+    wparams.no_context       = true;
+    if (!g_stream.prompt.empty()) {
+        wparams.initial_prompt = g_stream.prompt.c_str();
+    }
+
+    if (whisper_full(g_stream.ctx, wparams, g_stream.pcmf32.data(),
+                     (int)g_stream.pcmf32.size()) != 0) {
+        result["@type"] = "error";
+        result["message"] = "failed to process audio";
+        return result;
+    }
+
+    std::string text;
+    const int n_segments = whisper_full_n_segments(g_stream.ctx);
+    for (int i = 0; i < n_segments; ++i) {
+        text += whisper_full_get_segment_text(g_stream.ctx, i);
+    }
+
+    g_stream.last_text = text;
+    g_stream.n_transcribed = g_stream.pcmf32.size();
+
+    if (g_stream.pcmf32.size() >= STREAM_COMMIT_SAMPLES) {
+        g_stream.committed += text;
+        g_stream.last_text.clear();
+        g_stream.pcmf32.clear();
+        g_stream.n_transcribed = 0;
+    }
+
+    result["text"] = g_stream.committed + g_stream.last_text;
+    return result;
+}
+
+extern "C"
+{
+    // body: {"model": path, "language": "en", "threads": 4,
+    //        "is_translate": false, "initial_prompt": "..."}
+    char *stream_start(char *body)
+    {
+        std::lock_guard<std::mutex> lock(g_stream.mutex);
+        json jsonResult;
+
+        json jsonBody = json::parse(body, nullptr, false);
+        if (jsonBody.is_discarded() || !jsonBody.contains("model")) {
+            jsonResult["@type"] = "error";
+            jsonResult["message"] = "stream_start: invalid request body";
+            return jsonToChar(jsonResult);
+        }
+
+        if (g_stream.ctx != nullptr) {
+            whisper_free(g_stream.ctx);
+            g_stream.ctx = nullptr;
+        }
+        g_stream.pcmf32.clear();
+        g_stream.n_transcribed = 0;
+        g_stream.committed.clear();
+        g_stream.last_text.clear();
+
+        g_stream.language  = jsonBody.value("language", "en");
+        g_stream.n_threads = jsonBody.value("threads", 4);
+        g_stream.translate = jsonBody.value("is_translate", false);
+        g_stream.prompt.clear();
+        if (jsonBody.contains("initial_prompt") && jsonBody["initial_prompt"].is_string()) {
+            g_stream.prompt = jsonBody["initial_prompt"].get<std::string>();
+        }
+
+        const std::string model = jsonBody["model"].get<std::string>();
+        g_stream.ctx = whisper_init_from_file(model.c_str());
+        if (g_stream.ctx == nullptr) {
+            jsonResult["@type"] = "error";
+            jsonResult["message"] = "stream_start: failed to load model " + model;
+            return jsonToChar(jsonResult);
+        }
+
+        jsonResult["@type"] = "streamStarted";
+        return jsonToChar(jsonResult);
+    }
+
+    // pcm: 16 kHz mono float32 samples in [-1, 1].
+    char *stream_feed(const float *pcm, int32_t n_samples)
+    {
+        std::lock_guard<std::mutex> lock(g_stream.mutex);
+        json jsonResult;
+
+        if (g_stream.ctx == nullptr) {
+            jsonResult["@type"] = "error";
+            jsonResult["message"] = "stream_feed: stream not started";
+            return jsonToChar(jsonResult);
+        }
+        if (pcm != nullptr && n_samples > 0) {
+            g_stream.pcmf32.insert(g_stream.pcmf32.end(), pcm, pcm + n_samples);
+        }
+
+        if (g_stream.pcmf32.size() - g_stream.n_transcribed >= STREAM_STEP_SAMPLES) {
+            return jsonToChar(stream_run_inference());
+        }
+
+        jsonResult["@type"] = "streamPartial";
+        jsonResult["text"] = g_stream.committed + g_stream.last_text;
+        return jsonToChar(jsonResult);
+    }
+
+    char *stream_stop()
+    {
+        std::lock_guard<std::mutex> lock(g_stream.mutex);
+        json jsonResult;
+
+        if (g_stream.ctx == nullptr) {
+            jsonResult["@type"] = "error";
+            jsonResult["message"] = "stream_stop: stream not started";
+            return jsonToChar(jsonResult);
+        }
+
+        // Cover whatever audio arrived after the last run.
+        if (g_stream.pcmf32.size() > g_stream.n_transcribed &&
+            g_stream.pcmf32.size() >= (size_t)WHISPER_SAMPLE_RATE / 2) {
+            stream_run_inference();
+        }
+
+        jsonResult["@type"] = "streamFinal";
+        jsonResult["text"] = g_stream.committed + g_stream.last_text;
+
+        whisper_free(g_stream.ctx);
+        g_stream.ctx = nullptr;
+        g_stream.pcmf32.clear();
+        g_stream.pcmf32.shrink_to_fit();
+        g_stream.n_transcribed = 0;
+        g_stream.committed.clear();
+        g_stream.last_text.clear();
+
+        return jsonToChar(jsonResult);
     }
 }

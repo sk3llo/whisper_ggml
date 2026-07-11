@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -43,6 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isProcessing = false;
   bool isProcessingFile = false;
   bool isListening = false;
+  WhisperLiveSession? liveSession;
 
   /// Optional initial prompt that biases Whisper decoding toward specific
   /// vocabulary, names, and punctuation. Useful for domain-specific
@@ -128,51 +130,57 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  /// Live transcription: transcripts appear while you speak instead of
+  /// after recording stops.
   Future<void> record() async {
-    if (await audioRecorder.hasPermission()) {
-      if (await audioRecorder.isRecording()) {
-        final audioPath = await audioRecorder.stop();
+    if (!await audioRecorder.hasPermission()) return;
 
-        if (audioPath != null) {
-          debugPrint('Stopped listening.');
+    if (isListening) {
+      debugPrint('Stopping live transcription.');
+      await audioRecorder.stop();
 
-          setState(() {
-            isListening = false;
-            isProcessing = true;
-          });
+      setState(() {
+        isListening = false;
+        isProcessing = true;
+      });
 
-          final result = await whisperController.transcribe(
-            model: model,
-            audioPath: audioPath,
-            lang: 'en',
-            initialPrompt: _initialPrompt.isEmpty ? null : _initialPrompt,
-          );
+      final String finalText = await liveSession?.stop() ?? '';
+      liveSession = null;
 
-          if (mounted) {
-            setState(() {
-              isProcessing = false;
-            });
-          }
-
-          if (result?.transcription.text != null) {
-            setState(() {
-              transcribedText = result!.transcription.text;
-            });
-          }
-        } else {
-          debugPrint('No recording exists.');
-        }
-      } else {
-        debugPrint('Started listening.');
-
+      if (mounted) {
         setState(() {
-          isListening = true;
+          isProcessing = false;
+          if (finalText.isNotEmpty) transcribedText = finalText;
         });
-
-        final Directory appDirectory = await getTemporaryDirectory();
-        await audioRecorder.start(const RecordConfig(),
-            path: '${appDirectory.path}/test.m4a');
       }
+    } else {
+      debugPrint('Starting live transcription.');
+
+      final Stream<Uint8List> pcmStream = await audioRecorder.startStream(
+        const RecordConfig(
+          encoder: AudioEncoder.pcm16bits,
+          sampleRate: 16000,
+          numChannels: 1,
+        ),
+      );
+
+      final session = await whisperController.transcribeLive(
+        model: model,
+        pcm16Stream: pcmStream,
+        lang: 'en',
+        initialPrompt: _initialPrompt.isEmpty ? null : _initialPrompt,
+      );
+      liveSession = session;
+
+      session.partials.listen((text) {
+        if (mounted && text.isNotEmpty) {
+          setState(() => transcribedText = text);
+        }
+      });
+
+      setState(() {
+        isListening = true;
+      });
     }
   }
 
