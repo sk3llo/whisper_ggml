@@ -6,7 +6,7 @@ _On-device speech-to-text for Flutter, powered by [whisper.cpp](https://github.c
 
 <p align="center">
   <a href="https://pub.dev/packages/whisper_ggml">
-     <img src="https://img.shields.io/badge/pub-2.2.0-blue?logo=dart" alt="pub">
+     <img src="https://img.shields.io/pub/v/whisper_ggml?logo=dart&color=blue" alt="pub">
   </a>
   <a href="https://github.com/ggml-org/whisper.cpp">
      <img src="https://img.shields.io/badge/whisper.cpp-v1.9.1-green" alt="whisper.cpp">
