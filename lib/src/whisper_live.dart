@@ -146,12 +146,20 @@ Future<WhisperLiveSession> startWhisperLiveSession({
 /// model decodes slower than real time, the mailbox and the native window
 /// grow and partial latency drifts behind the audio. If that becomes a
 /// target, cap the window or surface an "audio seconds behind" metric.
+DynamicLibrary _openLib() {
+  if (Platform.isAndroid) {
+    return DynamicLibrary.open('libwhisper.so');
+  } else if (Platform.isWindows) {
+    return DynamicLibrary.open('whisper_ggml.dll');
+  } else if (Platform.isLinux) {
+    return DynamicLibrary.open('libwhisper_ggml.so');
+  } else {
+    return DynamicLibrary.process();
+  }
+}
+
 void _liveWorker(SendPort toMain) {
-  final DynamicLibrary lib = Platform.isAndroid
-      ? DynamicLibrary.open('libwhisper.so')
-      : Platform.isWindows
-          ? DynamicLibrary.open('whisper_ggml.dll')
-          : DynamicLibrary.process();
+  final DynamicLibrary lib = _openLib();
 
   final start =
       lib.lookupFunction<_StreamStartNative, _StreamStartNative>('stream_start');

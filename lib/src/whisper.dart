@@ -39,6 +39,8 @@ class Whisper {
       return DynamicLibrary.open('libwhisper.so');
     } else if (Platform.isWindows) {
       return DynamicLibrary.open('whisper_ggml.dll');
+    } else if (Platform.isLinux) {
+      return DynamicLibrary.open('libwhisper_ggml.so');
     } else {
       return DynamicLibrary.process();
     }

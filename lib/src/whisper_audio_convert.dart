@@ -23,7 +23,7 @@ class WhisperAudioConvert {
 
   /// convert [audioInput] to wav file
   Future<File?> convert() async {
-    if (Platform.isWindows) {
+    if (Platform.isWindows || Platform.isLinux) {
       return _convertWithFfmpegCli();
     }
 
@@ -57,10 +57,10 @@ class WhisperAudioConvert {
     return null;
   }
 
-  /// ffmpeg_kit has no Windows implementation, so Windows uses an `ffmpeg`
-  /// executable from PATH instead. Returns null when ffmpeg is missing or
-  /// fails; callers then transcribe the original file, which works as long
-  /// as it is already a 16 kHz mono WAV.
+  /// ffmpeg_kit has no Windows or Linux implementation, so those platforms
+  /// use an `ffmpeg` executable from PATH instead. Returns null when ffmpeg
+  /// is missing or fails; callers then transcribe the original file, which
+  /// works as long as it is already a 16 kHz mono WAV.
   Future<File?> _convertWithFfmpegCli() async {
     try {
       final ProcessResult result = await Process.run('ffmpeg', [

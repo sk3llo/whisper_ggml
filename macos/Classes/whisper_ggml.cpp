@@ -209,6 +209,14 @@ json transcribe(json jsonBody)
     cparams.use_gpu = false; // CPU-only build
     struct whisper_context *ctx =
         whisper_init_from_file_with_params(params.model.c_str(), cparams);
+    if (ctx == nullptr)
+    {
+        // Without this check a missing/corrupt model file crashes in
+        // whisper_full instead of surfacing an error response.
+        jsonResult["@type"] = "error";
+        jsonResult["message"] = "failed to load model " + params.model;
+        return jsonResult;
+    }
 
     // struct whisper_context *ctx = whisper_init(params.model.c_str());
     std::string text_result = "";
@@ -223,6 +231,7 @@ json transcribe(json jsonBody)
         {
             jsonResult["@type"] = "error";
             jsonResult["message"] = " failed to open WAV file ";
+            whisper_free(ctx);
             return jsonResult;
         }
 
@@ -230,6 +239,8 @@ json transcribe(json jsonBody)
         {
             jsonResult["@type"] = "error";
             jsonResult["message"] = "must be mono or stereo";
+            drwav_uninit(&wav);
+            whisper_free(ctx);
             return jsonResult;
         }
 
@@ -237,6 +248,8 @@ json transcribe(json jsonBody)
         {
             jsonResult["@type"] = "error";
             jsonResult["message"] = "WAV file  must be 16 kHz";
+            drwav_uninit(&wav);
+            whisper_free(ctx);
             return jsonResult;
         }
 
@@ -244,6 +257,8 @@ json transcribe(json jsonBody)
         {
             jsonResult["@type"] = "error";
             jsonResult["message"] = "WAV file  must be 16 bit";
+            drwav_uninit(&wav);
+            whisper_free(ctx);
             return jsonResult;
         }
 
@@ -321,6 +336,7 @@ json transcribe(json jsonBody)
         {
             jsonResult["@type"] = "error";
             jsonResult["message"] = "failed to process audio";
+            whisper_free(ctx);
             return jsonResult;
         }
 

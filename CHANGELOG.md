@@ -1,3 +1,12 @@
+## 2.2.0
+
+* Added **Linux support** (x64): the vendored whisper.cpp v1.9.1 builds into `libwhisper_ggml.so` through the standard Flutter Linux CMake toolchain — both one-shot (`transcribe`) and live (`transcribeLive`) transcription work
+* Removed the stale prebuilt `libggml*.so` binaries from `linux/` — leftovers that never constituted a working implementation (no whisper code, wrong bundling variable) and only inflated the package
+* Like Windows, Linux x64 targets AVX2 by default (`-DWHISPER_GGML_AVX2=OFF` for baseline SSE2) and uses an `ffmpeg` executable from `PATH` for non-WAV input
+* Example app: added the Linux runner; the Record button captures 16 kHz WAV directly on Linux
+* Fixed a native crash (SIGSEGV) on **all platforms** when the model file is missing or corrupt: `transcribe` called `whisper_full` with a null context instead of returning an error response (found by the new Linux test suite)
+* Fixed a native memory leak on all platforms: error paths in `transcribe` (unreadable/wrong-format WAV, failed inference) returned without freeing the loaded model — ~150 MB leaked per failed call with the `base` model
+
 ## 2.1.0
 
 * Added **Windows support** (x64): the vendored whisper.cpp v1.9.1 now also builds into `whisper_ggml.dll` through the standard Flutter Windows CMake toolchain — both one-shot (`transcribe`) and live (`transcribeLive`) transcription work

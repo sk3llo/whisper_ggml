@@ -337,9 +337,10 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       final Directory appDirectory = await getTemporaryDirectory();
       await appDirectory.create(recursive: true);
-      // Windows has no bundled ffmpeg to convert compressed recordings, so
-      // record straight to the 16 kHz mono WAV whisper expects.
-      if (Platform.isWindows) {
+      // Windows and Linux have no bundled ffmpeg to convert compressed
+      // recordings, so record straight to the 16 kHz mono WAV whisper
+      // expects.
+      if (Platform.isWindows || Platform.isLinux) {
         await audioRecorder.start(
           const RecordConfig(
             encoder: AudioEncoder.wav,

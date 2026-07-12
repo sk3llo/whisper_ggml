@@ -116,17 +116,17 @@ class WhisperController {
     if (!Platform.isAndroid &&
         !Platform.isIOS &&
         !Platform.isMacOS &&
-        !Platform.isWindows) {
+        !Platform.isWindows &&
+        !Platform.isLinux) {
       throw UnsupportedError(
-        'whisper_ggml supports Android, iOS, macOS, and Windows. '
+        'whisper_ggml supports Android, iOS, macOS, Windows, and Linux. '
         '${Platform.operatingSystem} has no native whisper implementation.',
       );
     }
     // getLibraryDirectory only exists on Apple platforms.
-    final Directory libraryDirectory =
-        Platform.isAndroid || Platform.isWindows
-            ? await getApplicationSupportDirectory()
-            : await getLibraryDirectory();
+    final Directory libraryDirectory = Platform.isIOS || Platform.isMacOS
+        ? await getLibraryDirectory()
+        : await getApplicationSupportDirectory();
     return libraryDirectory.path;
   }
 
