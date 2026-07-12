@@ -1,5 +1,5 @@
 #include "main.h"
-#include "whisper.cpp/whisper.h"
+#include "whisper.cpp/include/whisper.h"
 
 #define DR_WAV_IMPLEMENTATION
 #include "whisper.cpp/examples/dr_wav.h"
@@ -130,7 +130,10 @@ json transcribe(json jsonBody) noexcept
     }
 
     // whisper init
-    struct whisper_context *ctx = whisper_init_from_file(params.model.c_str());
+    struct whisper_context_params cparams = whisper_context_default_params();
+    cparams.use_gpu = false; // CPU-only build
+    struct whisper_context *ctx =
+        whisper_init_from_file_with_params(params.model.c_str(), cparams);
     std::string text_result = "";
     const auto fname_inp = params.audio;
     // WAV input
@@ -215,7 +218,7 @@ json transcribe(json jsonBody) noexcept
             wparams.initial_prompt = params.prompt.c_str();
         }
         wparams.no_context = params.no_context;
-        wparams.suppress_non_speech_tokens = params.suppress_nst;
+        wparams.suppress_nst = params.suppress_nst;
 
         if (params.split_on_word) {
             wparams.max_len = 1;
@@ -382,7 +385,7 @@ static json stream_run_inference()
     wparams.language         = g_stream.language.c_str();
     wparams.n_threads        = g_stream.n_threads;
     wparams.no_context       = true;
-    wparams.suppress_non_speech_tokens = g_stream.suppress_nst;
+    wparams.suppress_nst = g_stream.suppress_nst;
     if (!g_stream.prompt.empty()) {
         wparams.initial_prompt = g_stream.prompt.c_str();
     }
@@ -474,7 +477,9 @@ extern "C"
                 std::string("stream_start: bad request: ") + e.what();
             return jsonToChar(jsonResult);
         }
-        g_stream.ctx = whisper_init_from_file(model.c_str());
+        whisper_context_params cparams = whisper_context_default_params();
+        cparams.use_gpu = false; // CPU-only build
+        g_stream.ctx = whisper_init_from_file_with_params(model.c_str(), cparams);
         if (g_stream.ctx == nullptr) {
             jsonResult["@type"] = "error";
             jsonResult["message"] = "stream_start: failed to load model " + model;

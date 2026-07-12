@@ -54,9 +54,11 @@ android {
         }
         externalNativeBuild {
             cmake {
-                cFlags "-O3 -s -flto=thin -ffunction-sections -fdata-sections -fvisibility=hidden -fvisibility-inlines-hidden"
-                cppFlags "-O3 -s -flto=thin -ffunction-sections -fdata-sections -fvisibility=hidden -fvisibility-inlines-hidden"
-                arguments "-Wl,--gc-sections,--exclude-libs,ALL", "-DANDROID_STL=c++_static", "-DCMAKE_BUILD_TYPE=Release"
+                // No thin-LTO: with the full whisper.cpp v1.9.1 source tree
+                // it multiplies link time for no meaningful size win.
+                cFlags "-O3 -ffunction-sections -fdata-sections"
+                cppFlags "-O3 -ffunction-sections -fdata-sections"
+                arguments "-DANDROID_STL=c++_static", "-DCMAKE_BUILD_TYPE=Release"
             }
         }
     }
