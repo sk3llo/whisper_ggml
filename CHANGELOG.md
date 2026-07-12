@@ -1,3 +1,12 @@
+## 2.0.0
+
+* Upgraded the vendored whisper.cpp from a 2023-era snapshot to **v1.9.1** — roughly **15× faster** transcription (an 11-second clip takes ~0.4 s with the `base` model on Apple Silicon), with Accelerate enabled on iOS/macOS
+* The model-loading code that crashed on some physical iPhones was rewritten upstream ([#22](https://github.com/sk3llo/whisper_ggml/issues/22)); verified working on the iOS simulator
+* Removed the `-march=armv8.2-a+fp16` Android compile flags that caused SIGILL crashes on armv8.0 devices ([#15](https://github.com/sk3llo/whisper_ggml/issues/15))
+* Native code now compiles with `-O3` in debug builds on iOS/macOS, so development-time transcription is no longer unusably slow
+* Rewrote the README
+* Note: while the Dart API is unchanged, the native engine swap is significant — hence the major version bump
+
 ## 1.9.2
 
 * Removed the `windows` and `linux` platform declarations — neither has a native whisper implementation, and pub.dev advertised support that failed at runtime. Unsupported platforms now throw a clear `UnsupportedError` ([#20](https://github.com/sk3llo/whisper_ggml/issues/20))
