@@ -49,7 +49,7 @@ on-device, no server, no API keys.
 
 ```yaml
 dependencies:
-  whisper_ggml: ^2.2.0
+  whisper_ggml: ^2.3.0
 ```
 
 ## Quick start
@@ -67,6 +67,11 @@ final result = await controller.transcribe(
 
 print(result?.transcription.text);
 ```
+
+Pass `withSegments: true` to also get per-segment timestamps in
+`result.transcription.segments` (each segment has `fromTs`/`toTs`
+`Duration`s and its `text`); add `splitOnWord: true` for one segment
+per word instead of per phrase.
 
 The model is downloaded automatically on first use. Non-WAV input is
 converted with the bundled FFmpeg — except on Windows and Linux, where

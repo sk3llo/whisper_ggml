@@ -66,6 +66,12 @@ class WhisperController {
     return session;
   }
 
+  /// Transcribe [audioPath] with [model].
+  ///
+  /// When [withSegments] is `true`, the result's
+  /// [WhisperTranscribeResponse.segments] carries per-segment timestamps
+  /// (`fromTs`/`toTs`) alongside the text; combine with [splitOnWord] to
+  /// get one segment per word instead of per phrase.
   Future<TranscribeResult?> transcribe({
     required WhisperModel model,
     required String audioPath,
@@ -74,14 +80,14 @@ class WhisperController {
     String? initialPrompt,
     bool noContext = false,
     bool suppressNonSpeechTokens = false,
+    bool withSegments = false,
+    bool splitOnWord = false,
   }) async {
     await initModel(model);
 
     final Whisper whisper = Whisper(model: model);
     final DateTime start = DateTime.now();
     const bool translate = false;
-    const bool withSegments = false;
-    const bool splitWords = false;
 
     try {
       final WhisperTranscribeResponse transcription = await whisper.transcribe(
@@ -90,7 +96,7 @@ class WhisperController {
           language: lang,
           isTranslate: translate,
           isNoTimestamps: !withSegments,
-          splitOnWord: splitWords,
+          splitOnWord: splitOnWord,
           isRealtime: true,
           diarize: diarize,
           initialPrompt: initialPrompt,

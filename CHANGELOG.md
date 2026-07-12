@@ -1,3 +1,7 @@
+## 2.3.0
+
+* `WhisperController.transcribe` now exposes `withSegments` and `splitOnWord` ([#14](https://github.com/sk3llo/whisper_ggml/issues/14)): pass `withSegments: true` to get per-segment timestamps in `result.transcription.segments` (`fromTs`/`toTs` as `Duration`), and add `splitOnWord: true` for one segment per word. Previously segments were only reachable through the low-level `Whisper.transcribe` API
+
 ## 2.2.0
 
 * Added **Linux support** (x64): the vendored whisper.cpp v1.9.1 builds into `libwhisper_ggml.so` through the standard Flutter Linux CMake toolchain — both one-shot (`transcribe`) and live (`transcribeLive`) transcription work
