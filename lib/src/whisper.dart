@@ -67,10 +67,20 @@ class Whisper {
   }
 
   /// Transcribe audio file to text
+  ///
+  /// [onProgress] is invoked with whisper.cpp's transcription progress
+  /// (0–100, coarse steps) while inference runs.
   Future<WhisperTranscribeResponse> transcribe({
     required TranscribeRequest transcribeRequest,
     required String modelPath,
+    void Function(int percent)? onProgress,
   }) async {
+    // A listener callable may be invoked from whisper's worker thread;
+    // it delivers to this isolate. Kept open until the request finishes.
+    final NativeCallable<Void Function(Int32)>? progressCallable =
+        onProgress == null
+            ? null
+            : NativeCallable<Void Function(Int32)>.listener(onProgress);
     try {
       final WhisperAudioConvert converter = WhisperAudioConvert(
         audioInput: File(transcribeRequest.audio),
@@ -87,6 +97,7 @@ class Whisper {
         whisperRequest: TranscribeRequestDto.fromTranscribeRequest(
           req,
           modelPath,
+          progressCallbackAddress: progressCallable?.nativeFunction.address,
         ),
       );
 
@@ -97,6 +108,8 @@ class Whisper {
     } catch (e) {
       debugPrint(e.toString());
       rethrow;
+    } finally {
+      progressCallable?.close();
     }
   }
 

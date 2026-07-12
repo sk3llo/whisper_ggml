@@ -35,13 +35,18 @@ abstract class TranscribeRequestDto
     @JsonKey(name: 'suppress_non_speech_tokens')
     @Default(false)
     bool suppressNonSpeechTokens,
+
+    /// Address of a `NativeCallable<Void Function(Int32)>` the native layer
+    /// invokes with transcription progress (0–100); null disables it.
+    @JsonKey(name: 'progress_callback') int? progressCallback,
   }) = _TranscribeRequestDto;
 
   /// Convert [request] to TranscribeRequestDto with specified [modelPath]
   factory TranscribeRequestDto.fromTranscribeRequest(
     TranscribeRequest request,
-    String modelPath,
-  ) {
+    String modelPath, {
+    int? progressCallbackAddress,
+  }) {
     return TranscribeRequestDto(
       audio: request.audio,
       model: modelPath,
@@ -60,6 +65,7 @@ abstract class TranscribeRequestDto
       initialPrompt: request.initialPrompt,
       noContext: request.noContext,
       suppressNonSpeechTokens: request.suppressNonSpeechTokens,
+      progressCallback: progressCallbackAddress,
     );
   }
   const TranscribeRequestDto._();

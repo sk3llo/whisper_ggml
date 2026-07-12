@@ -49,7 +49,7 @@ on-device, no server, no API keys.
 
 ```yaml
 dependencies:
-  whisper_ggml: ^2.3.0
+  whisper_ggml: ^2.4.0
 ```
 
 ## Quick start
@@ -67,6 +67,9 @@ final result = await controller.transcribe(
 
 print(result?.transcription.text);
 ```
+
+Pass `onProgress: (percent) => ...` to receive transcription progress
+as a 0–100 percentage (coarse steps) while inference runs.
 
 Pass `withSegments: true` to also get per-segment timestamps in
 `result.transcription.segments` (each segment has `fromTs`/`toTs`

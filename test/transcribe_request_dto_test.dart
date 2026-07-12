@@ -58,6 +58,24 @@ void main() {
       expect(body['suppress_non_speech_tokens'], isTrue);
     });
 
+    test('progress_callback is null by default and forwards an address', () {
+      final defaultDto = TranscribeRequestDto.fromTranscribeRequest(
+        request(),
+        '/tmp/model.bin',
+      );
+      final defaultBody =
+          json.decode(defaultDto.toRequestString()) as Map<String, dynamic>;
+      expect(defaultBody['progress_callback'], isNull);
+
+      final dto = TranscribeRequestDto.fromTranscribeRequest(
+        request(),
+        '/tmp/model.bin',
+        progressCallbackAddress: 0x7fff12345678,
+      );
+      final body = json.decode(dto.toRequestString()) as Map<String, dynamic>;
+      expect(body['progress_callback'], 0x7fff12345678);
+    });
+
     test('fromJson defaults no_context to false when key is absent', () {
       final dto = TranscribeRequestDto.fromJson(const {
         'audio': '/tmp/audio.wav',

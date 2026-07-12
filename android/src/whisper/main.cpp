@@ -71,6 +71,9 @@ struct whisper_params
     // whisper_full_params.suppress_non_speech_tokens: drop [BLANK_AUDIO]-style annotations.
     bool suppress_nst = false;
 
+    // Address of a Dart NativeCallable<Void Function(Int32)>; 0 = none.
+    uint64_t progress_cb_addr = 0;
+
     std::string language = "auto";
     std::string prompt;
     std::string model = "models/ggml-tiny.bin";
@@ -113,6 +116,10 @@ json transcribe(json jsonBody) noexcept
     if (jsonBody.contains("suppress_non_speech_tokens") && jsonBody["suppress_non_speech_tokens"].is_boolean())
     {
         params.suppress_nst = jsonBody["suppress_non_speech_tokens"].get<bool>();
+    }
+    if (jsonBody.contains("progress_callback") && jsonBody["progress_callback"].is_number_unsigned())
+    {
+        params.progress_cb_addr = jsonBody["progress_callback"].get<uint64_t>();
     }
     json jsonResult;
     jsonResult["@type"] = "transcribe";
@@ -241,6 +248,15 @@ json transcribe(json jsonBody) noexcept
         if (params.split_on_word) {
             wparams.max_len = 1;
             wparams.token_timestamps = true;
+        }
+
+        if (params.progress_cb_addr) {
+            // NativeCallable.listener is safe to invoke from whisper's
+            // worker thread: it posts to the owning Dart isolate.
+            wparams.progress_callback = [](struct whisper_context *, struct whisper_state *, int progress, void * user_data) {
+                ((void (*)(int32_t))user_data)((int32_t)progress);
+            };
+            wparams.progress_callback_user_data = (void *)(uintptr_t)params.progress_cb_addr;
         }
 
         if (whisper_full(ctx, wparams, pcmf32.data(), pcmf32.size()) != 0)

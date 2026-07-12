@@ -77,6 +77,9 @@ class WhisperController {
   /// model ([WhisperModel.smallEnTdrz], English only) and [withSegments],
   /// segments where the speaker changes afterwards have
   /// `speakerTurnNext == true`. Has no effect with regular models.
+  ///
+  /// [onProgress] reports transcription progress as a 0–100 percentage
+  /// (coarse steps) while inference runs.
   Future<TranscribeResult?> transcribe({
     required WhisperModel model,
     required String audioPath,
@@ -87,6 +90,7 @@ class WhisperController {
     bool suppressNonSpeechTokens = false,
     bool withSegments = false,
     bool splitOnWord = false,
+    void Function(int percent)? onProgress,
   }) async {
     await initModel(model);
 
@@ -109,6 +113,7 @@ class WhisperController {
           suppressNonSpeechTokens: suppressNonSpeechTokens,
         ),
         modelPath: _modelPath,
+        onProgress: onProgress,
       );
 
       final Duration transcriptionDuration = DateTime.now().difference(start);

@@ -1,3 +1,7 @@
+## 2.4.0
+
+* Added transcription progress reporting ([#6](https://github.com/sk3llo/whisper_ggml/issues/6)): `transcribe` (controller and low-level API) takes an optional `onProgress` callback invoked with whisper.cpp's inference progress as a 0–100 percentage (coarse steps). Implemented via a `NativeCallable.listener` handed to `whisper_full_params.progress_callback`, so events arrive on the calling isolate without blocking inference
+
 ## 2.3.0
 
 * `WhisperController.transcribe` now exposes `withSegments` and `splitOnWord` ([#14](https://github.com/sk3llo/whisper_ggml/issues/14)): pass `withSegments: true` to get per-segment timestamps in `result.transcription.segments` (`fromTs`/`toTs` as `Duration`), and add `splitOnWord: true` for one segment per word. Previously segments were only reachable through the low-level `Whisper.transcribe` API

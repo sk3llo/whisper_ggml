@@ -27,6 +27,7 @@ _TranscribeRequestDto _$TranscribeRequestDtoFromJson(
       noContext: json['no_context'] as bool? ?? false,
       suppressNonSpeechTokens:
           json['suppress_non_speech_tokens'] as bool? ?? false,
+      progressCallback: (json['progress_callback'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$TranscribeRequestDtoToJson(
@@ -49,4 +50,5 @@ Map<String, dynamic> _$TranscribeRequestDtoToJson(
       'initial_prompt': instance.initialPrompt,
       'no_context': instance.noContext,
       'suppress_non_speech_tokens': instance.suppressNonSpeechTokens,
+      'progress_callback': instance.progressCallback,
     };
