@@ -1,3 +1,11 @@
+## 2.1.0
+
+* Added **Windows support** (x64): the vendored whisper.cpp v1.9.1 now also builds into `whisper_ggml.dll` through the standard Flutter Windows CMake toolchain — both one-shot (`transcribe`) and live (`transcribeLive`) transcription work
+* Windows builds target AVX2 by default (matching upstream whisper.cpp's standard x64 binaries); pass `-DWHISPER_GGML_AVX2=OFF` to the plugin CMake for a baseline SSE2 build
+* Audio conversion on Windows uses an `ffmpeg` executable from `PATH` when available (ffmpeg_kit has no Windows implementation); without it, input must already be 16 kHz mono WAV
+* Native inference stays optimized (`/O2`) in Windows debug builds, matching the iOS/macOS behaviour
+* Example app: added the Windows runner; the Record button captures 16 kHz WAV directly on Windows so no ffmpeg is needed
+
 ## 2.0.0
 
 * Upgraded the vendored whisper.cpp from a 2023-era snapshot to **v1.9.1** — roughly **15× faster** transcription (an 11-second clip takes ~0.4 s with the `base` model on Apple Silicon), with Accelerate enabled on iOS/macOS

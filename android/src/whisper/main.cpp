@@ -432,6 +432,7 @@ extern "C"
 {
     // body: {"model": path, "language": "en", "threads": 4,
     //        "is_translate": false, "initial_prompt": "..."}
+    FUNCTION_ATTRIBUTE
     char *stream_start(char *body)
     {
         std::lock_guard<std::mutex> lock(g_stream.mutex);
@@ -491,6 +492,7 @@ extern "C"
     }
 
     // pcm: 16 kHz mono float32 samples in [-1, 1].
+    FUNCTION_ATTRIBUTE
     char *stream_feed(const float *pcm, int32_t n_samples)
     {
         std::lock_guard<std::mutex> lock(g_stream.mutex);
@@ -539,6 +541,7 @@ extern "C"
         return jsonToChar(jsonResult);
     }
 
+    FUNCTION_ATTRIBUTE
     char *stream_stop()
     {
         std::lock_guard<std::mutex> lock(g_stream.mutex);

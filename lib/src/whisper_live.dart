@@ -149,7 +149,9 @@ Future<WhisperLiveSession> startWhisperLiveSession({
 void _liveWorker(SendPort toMain) {
   final DynamicLibrary lib = Platform.isAndroid
       ? DynamicLibrary.open('libwhisper.so')
-      : DynamicLibrary.process();
+      : Platform.isWindows
+          ? DynamicLibrary.open('whisper_ggml.dll')
+          : DynamicLibrary.process();
 
   final start =
       lib.lookupFunction<_StreamStartNative, _StreamStartNative>('stream_start');

@@ -337,8 +337,21 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       final Directory appDirectory = await getTemporaryDirectory();
       await appDirectory.create(recursive: true);
-      await audioRecorder.start(const RecordConfig(),
-          path: '${appDirectory.path}/test.m4a');
+      // Windows has no bundled ffmpeg to convert compressed recordings, so
+      // record straight to the 16 kHz mono WAV whisper expects.
+      if (Platform.isWindows) {
+        await audioRecorder.start(
+          const RecordConfig(
+            encoder: AudioEncoder.wav,
+            sampleRate: 16000,
+            numChannels: 1,
+          ),
+          path: '${appDirectory.path}/test.wav',
+        );
+      } else {
+        await audioRecorder.start(const RecordConfig(),
+            path: '${appDirectory.path}/test.m4a');
+      }
 
       setState(() => activeMode = MicMode.classic);
     }

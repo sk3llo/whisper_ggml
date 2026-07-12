@@ -4,6 +4,8 @@
 #elif defined(_MSC_VER)
 // Marking a function for export
 #define FUNCTION_ATTRIBUTE __declspec(dllexport)
+#else
+#define FUNCTION_ATTRIBUTE
 #endif
 
 #ifdef __cplusplus
@@ -11,6 +13,7 @@ extern "C"
 {
 #endif
 
+    FUNCTION_ATTRIBUTE
     char *request(char *body);
 
 #ifdef __cplusplus

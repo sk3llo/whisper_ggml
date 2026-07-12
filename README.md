@@ -6,7 +6,7 @@ _On-device speech-to-text for Flutter, powered by [whisper.cpp](https://github.c
 
 <p align="center">
   <a href="https://pub.dev/packages/whisper_ggml">
-     <img src="https://img.shields.io/badge/pub-2.0.0-blue?logo=dart" alt="pub">
+     <img src="https://img.shields.io/badge/pub-2.1.0-blue?logo=dart" alt="pub">
   </a>
   <a href="https://github.com/ggml-org/whisper.cpp">
      <img src="https://img.shields.io/badge/whisper.cpp-v1.9.1-green" alt="whisper.cpp">
@@ -42,12 +42,13 @@ on-device, no server, no API keys.
 | Android  | API 21          |
 | iOS      | 15.6            |
 | macOS    | 10.15           |
+| Windows  | 10 (x64)        |
 
 ## Installation
 
 ```yaml
 dependencies:
-  whisper_ggml: ^2.0.0
+  whisper_ggml: ^2.1.0
 ```
 
 ## Quick start
@@ -67,7 +68,11 @@ print(result?.transcription.text);
 ```
 
 The model is downloaded automatically on first use. Non-WAV input is
-converted with the bundled FFmpeg.
+converted with the bundled FFmpeg — except on Windows, where FFmpeg is not
+bundled: an `ffmpeg` executable on `PATH` is used when present, otherwise
+the input must already be a 16 kHz mono WAV (the format the `record`
+package produces with `AudioEncoder.wav`, `sampleRate: 16000`,
+`numChannels: 1`).
 
 ## Live (streaming) transcription
 
@@ -135,7 +140,11 @@ Available on both `transcribe` and `transcribeLive`:
 ## Performance notes
 
 - The native engine is compiled with `-O3` on all platforms, including
-  debug builds on iOS/macOS — transcription speed there is close to release.
+  debug builds on iOS/macOS and Windows (`/O2`) — transcription speed there
+  is close to release.
+- Windows builds target **AVX2** by default, like upstream whisper.cpp's
+  standard x64 binaries (supported by virtually every x64 CPU since ~2013).
+  For very old CPUs, build with `-DWHISPER_GGML_AVX2=OFF`.
 - Android debug builds run the Dart layer in JIT mode; use `--release` for
   representative performance.
 - The bundled whisper.cpp v1.9.1 is roughly **15× faster** than the engine

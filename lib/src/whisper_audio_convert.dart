@@ -23,6 +23,10 @@ class WhisperAudioConvert {
 
   /// convert [audioInput] to wav file
   Future<File?> convert() async {
+    if (Platform.isWindows) {
+      return _convertWithFfmpegCli();
+    }
+
     final FFmpegSession session = await FFmpegKit.execute(
       [
         '-y',
@@ -50,6 +54,40 @@ class WhisperAudioConvert {
       );
     }
 
+    return null;
+  }
+
+  /// ffmpeg_kit has no Windows implementation, so Windows uses an `ffmpeg`
+  /// executable from PATH instead. Returns null when ffmpeg is missing or
+  /// fails; callers then transcribe the original file, which works as long
+  /// as it is already a 16 kHz mono WAV.
+  Future<File?> _convertWithFfmpegCli() async {
+    try {
+      final ProcessResult result = await Process.run('ffmpeg', [
+        '-y',
+        '-i',
+        audioInput.path,
+        '-ar',
+        '16000',
+        '-ac',
+        '1',
+        '-c:a',
+        'pcm_s16le',
+        audioOutput.path,
+      ]);
+      if (result.exitCode == 0) {
+        return audioOutput;
+      }
+      debugPrint(
+        'File convertion error with exitCode ${result.exitCode}: '
+        '${result.stderr}',
+      );
+    } on ProcessException {
+      debugPrint(
+        'ffmpeg not found on PATH; passing audio through unconverted. '
+        'Input must be a 16 kHz mono WAV.',
+      );
+    }
     return null;
   }
 }
