@@ -72,6 +72,11 @@ class WhisperController {
   /// [WhisperTranscribeResponse.segments] carries per-segment timestamps
   /// (`fromTs`/`toTs`) alongside the text; combine with [splitOnWord] to
   /// get one segment per word instead of per phrase.
+  ///
+  /// [diarize] enables tinydiarize speaker-turn detection: with a `-tdrz`
+  /// model ([WhisperModel.smallEnTdrz], English only) and [withSegments],
+  /// segments where the speaker changes afterwards have
+  /// `speakerTurnNext == true`. Has no effect with regular models.
   Future<TranscribeResult?> transcribe({
     required WhisperModel model,
     required String audioPath,

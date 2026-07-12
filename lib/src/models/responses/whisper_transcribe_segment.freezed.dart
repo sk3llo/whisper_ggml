@@ -20,6 +20,12 @@ mixin _$WhisperTranscribeSegment {
   Duration get toTs;
   String get text;
 
+  /// `true` when tinydiarize detected a speaker change after this
+  /// segment. Only ever set when transcribing with `diarize: true` and
+  /// a `-tdrz` model (e.g. [WhisperModel.smallEnTdrz]).
+  @JsonKey(name: 'speaker_turn_next')
+  bool get speakerTurnNext;
+
   /// Create a copy of WhisperTranscribeSegment
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -38,16 +44,19 @@ mixin _$WhisperTranscribeSegment {
             other is WhisperTranscribeSegment &&
             (identical(other.fromTs, fromTs) || other.fromTs == fromTs) &&
             (identical(other.toTs, toTs) || other.toTs == toTs) &&
-            (identical(other.text, text) || other.text == text));
+            (identical(other.text, text) || other.text == text) &&
+            (identical(other.speakerTurnNext, speakerTurnNext) ||
+                other.speakerTurnNext == speakerTurnNext));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, fromTs, toTs, text);
+  int get hashCode =>
+      Object.hash(runtimeType, fromTs, toTs, text, speakerTurnNext);
 
   @override
   String toString() {
-    return 'WhisperTranscribeSegment(fromTs: $fromTs, toTs: $toTs, text: $text)';
+    return 'WhisperTranscribeSegment(fromTs: $fromTs, toTs: $toTs, text: $text, speakerTurnNext: $speakerTurnNext)';
   }
 }
 
@@ -64,7 +73,8 @@ abstract mixin class $WhisperTranscribeSegmentCopyWith<$Res> {
       @JsonKey(
           name: 'to_ts', fromJson: WhisperTranscribeSegment._durationFromInt)
       Duration toTs,
-      String text});
+      String text,
+      @JsonKey(name: 'speaker_turn_next') bool speakerTurnNext});
 }
 
 /// @nodoc
@@ -83,6 +93,7 @@ class _$WhisperTranscribeSegmentCopyWithImpl<$Res>
     Object? fromTs = null,
     Object? toTs = null,
     Object? text = null,
+    Object? speakerTurnNext = null,
   }) {
     return _then(_self.copyWith(
       fromTs: null == fromTs
@@ -97,6 +108,10 @@ class _$WhisperTranscribeSegmentCopyWithImpl<$Res>
           ? _self.text
           : text // ignore: cast_nullable_to_non_nullable
               as String,
+      speakerTurnNext: null == speakerTurnNext
+          ? _self.speakerTurnNext
+          : speakerTurnNext // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -203,14 +218,16 @@ extension WhisperTranscribeSegmentPatterns on WhisperTranscribeSegment {
                 name: 'to_ts',
                 fromJson: WhisperTranscribeSegment._durationFromInt)
             Duration toTs,
-            String text)?
+            String text,
+            @JsonKey(name: 'speaker_turn_next') bool speakerTurnNext)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _WhisperTranscribeSegment() when $default != null:
-        return $default(_that.fromTs, _that.toTs, _that.text);
+        return $default(
+            _that.fromTs, _that.toTs, _that.text, _that.speakerTurnNext);
       case _:
         return orElse();
     }
@@ -240,13 +257,15 @@ extension WhisperTranscribeSegmentPatterns on WhisperTranscribeSegment {
                 name: 'to_ts',
                 fromJson: WhisperTranscribeSegment._durationFromInt)
             Duration toTs,
-            String text)
+            String text,
+            @JsonKey(name: 'speaker_turn_next') bool speakerTurnNext)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _WhisperTranscribeSegment():
-        return $default(_that.fromTs, _that.toTs, _that.text);
+        return $default(
+            _that.fromTs, _that.toTs, _that.text, _that.speakerTurnNext);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -275,13 +294,15 @@ extension WhisperTranscribeSegmentPatterns on WhisperTranscribeSegment {
                 name: 'to_ts',
                 fromJson: WhisperTranscribeSegment._durationFromInt)
             Duration toTs,
-            String text)?
+            String text,
+            @JsonKey(name: 'speaker_turn_next') bool speakerTurnNext)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _WhisperTranscribeSegment() when $default != null:
-        return $default(_that.fromTs, _that.toTs, _that.text);
+        return $default(
+            _that.fromTs, _that.toTs, _that.text, _that.speakerTurnNext);
       case _:
         return null;
     }
@@ -298,7 +319,8 @@ class _WhisperTranscribeSegment implements WhisperTranscribeSegment {
       @JsonKey(
           name: 'to_ts', fromJson: WhisperTranscribeSegment._durationFromInt)
       required this.toTs,
-      required this.text});
+      required this.text,
+      @JsonKey(name: 'speaker_turn_next') this.speakerTurnNext = false});
   factory _WhisperTranscribeSegment.fromJson(Map<String, dynamic> json) =>
       _$WhisperTranscribeSegmentFromJson(json);
 
@@ -310,6 +332,13 @@ class _WhisperTranscribeSegment implements WhisperTranscribeSegment {
   final Duration toTs;
   @override
   final String text;
+
+  /// `true` when tinydiarize detected a speaker change after this
+  /// segment. Only ever set when transcribing with `diarize: true` and
+  /// a `-tdrz` model (e.g. [WhisperModel.smallEnTdrz]).
+  @override
+  @JsonKey(name: 'speaker_turn_next')
+  final bool speakerTurnNext;
 
   /// Create a copy of WhisperTranscribeSegment
   /// with the given fields replaced by the non-null parameter values.
@@ -334,16 +363,19 @@ class _WhisperTranscribeSegment implements WhisperTranscribeSegment {
             other is _WhisperTranscribeSegment &&
             (identical(other.fromTs, fromTs) || other.fromTs == fromTs) &&
             (identical(other.toTs, toTs) || other.toTs == toTs) &&
-            (identical(other.text, text) || other.text == text));
+            (identical(other.text, text) || other.text == text) &&
+            (identical(other.speakerTurnNext, speakerTurnNext) ||
+                other.speakerTurnNext == speakerTurnNext));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, fromTs, toTs, text);
+  int get hashCode =>
+      Object.hash(runtimeType, fromTs, toTs, text, speakerTurnNext);
 
   @override
   String toString() {
-    return 'WhisperTranscribeSegment(fromTs: $fromTs, toTs: $toTs, text: $text)';
+    return 'WhisperTranscribeSegment(fromTs: $fromTs, toTs: $toTs, text: $text, speakerTurnNext: $speakerTurnNext)';
   }
 }
 
@@ -362,7 +394,8 @@ abstract mixin class _$WhisperTranscribeSegmentCopyWith<$Res>
       @JsonKey(
           name: 'to_ts', fromJson: WhisperTranscribeSegment._durationFromInt)
       Duration toTs,
-      String text});
+      String text,
+      @JsonKey(name: 'speaker_turn_next') bool speakerTurnNext});
 }
 
 /// @nodoc
@@ -381,6 +414,7 @@ class __$WhisperTranscribeSegmentCopyWithImpl<$Res>
     Object? fromTs = null,
     Object? toTs = null,
     Object? text = null,
+    Object? speakerTurnNext = null,
   }) {
     return _then(_WhisperTranscribeSegment(
       fromTs: null == fromTs
@@ -395,6 +429,10 @@ class __$WhisperTranscribeSegmentCopyWithImpl<$Res>
           ? _self.text
           : text // ignore: cast_nullable_to_non_nullable
               as String,
+      speakerTurnNext: null == speakerTurnNext
+          ? _self.speakerTurnNext
+          : speakerTurnNext // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }

@@ -25,7 +25,12 @@ enum WhisperModel {
   smallEn('small.en'),
 
   /// medium model for english only
-  mediumEn('medium.en');
+  mediumEn('medium.en'),
+
+  /// small english-only model with tinydiarize speaker-turn detection;
+  /// use together with `diarize: true` to get
+  /// `WhisperTranscribeSegment.speakerTurnNext`
+  smallEnTdrz('small.en-tdrz');
 
   const WhisperModel(this.modelName);
 
@@ -34,8 +39,13 @@ enum WhisperModel {
 
   /// Huggingface url to download model
   Uri get modelUri {
+    // tinydiarize models live in a different HF repo; same special case
+    // as upstream whisper.cpp's download-ggml-model script.
+    final String repo = modelName.contains('tdrz')
+        ? 'akashmjn/tinydiarize-whisper.cpp'
+        : 'ggerganov/whisper.cpp';
     return Uri.parse(
-      'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-$modelName.bin',
+      'https://huggingface.co/$repo/resolve/main/ggml-$modelName.bin',
     );
   }
 }

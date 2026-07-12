@@ -1,6 +1,7 @@
 ## 2.3.0
 
 * `WhisperController.transcribe` now exposes `withSegments` and `splitOnWord` ([#14](https://github.com/sk3llo/whisper_ggml/issues/14)): pass `withSegments: true` to get per-segment timestamps in `result.transcription.segments` (`fromTs`/`toTs` as `Duration`), and add `splitOnWord: true` for one segment per word. Previously segments were only reachable through the low-level `Whisper.transcribe` API
+* The `diarize` parameter now actually does something ([#13](https://github.com/sk3llo/whisper_ggml/issues/13)): it enables whisper.cpp's tinydiarize speaker-turn detection. Use the new `WhisperModel.smallEnTdrz` model (English only) together with `diarize: true` and `withSegments: true` — segments after which the speaker changes carry `speakerTurnNext == true`. With regular (non-tdrz) models the flag remains a no-op, as it silently was since 1.7.0
 
 ## 2.2.0
 

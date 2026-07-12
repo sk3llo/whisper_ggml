@@ -319,6 +319,9 @@ json transcribe(json jsonBody)
         wparams.language = params.language.c_str();
         wparams.n_threads = params.n_threads;
         wparams.split_on_word = params.split_on_word;
+        // tinydiarize speaker-turn detection; needs a *-tdrz model to
+        // emit turns, harmless with regular models.
+        wparams.tdrz_enable = params.diarize;
 
         // params.prompt outlives whisper_full(), so the pointer stays valid.
         if (!params.prompt.empty()) {
@@ -370,6 +373,8 @@ json transcribe(json jsonBody)
                     jsonSegment["from_ts"] = t0;
                     jsonSegment["to_ts"] = t1;
                     jsonSegment["text"] = text;
+                    jsonSegment["speaker_turn_next"] =
+                        whisper_full_get_segment_speaker_turn_next(ctx, i);
 
                     segmentsJson.push_back(jsonSegment);
                 }

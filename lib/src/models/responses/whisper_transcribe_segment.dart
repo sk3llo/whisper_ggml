@@ -19,6 +19,11 @@ abstract class WhisperTranscribeSegment with _$WhisperTranscribeSegment {
     @JsonKey(name: 'to_ts', fromJson: WhisperTranscribeSegment._durationFromInt)
     required Duration toTs,
     required String text,
+
+    /// `true` when tinydiarize detected a speaker change after this
+    /// segment. Only ever set when transcribing with `diarize: true` and
+    /// a `-tdrz` model (e.g. [WhisperModel.smallEnTdrz]).
+    @JsonKey(name: 'speaker_turn_next') @Default(false) bool speakerTurnNext,
   }) = _WhisperTranscribeSegment;
 
   /// Parse [json] to WhisperTranscribeSegment

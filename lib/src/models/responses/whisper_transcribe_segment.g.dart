@@ -14,6 +14,7 @@ _WhisperTranscribeSegment _$WhisperTranscribeSegmentFromJson(
       toTs: WhisperTranscribeSegment._durationFromInt(
           (json['to_ts'] as num).toInt()),
       text: json['text'] as String,
+      speakerTurnNext: json['speaker_turn_next'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$WhisperTranscribeSegmentToJson(
@@ -22,4 +23,5 @@ Map<String, dynamic> _$WhisperTranscribeSegmentToJson(
       'from_ts': instance.fromTs.inMicroseconds,
       'to_ts': instance.toTs.inMicroseconds,
       'text': instance.text,
+      'speaker_turn_next': instance.speakerTurnNext,
     };

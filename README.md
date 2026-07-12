@@ -73,6 +73,28 @@ Pass `withSegments: true` to also get per-segment timestamps in
 `Duration`s and its `text`); add `splitOnWord: true` for one segment
 per word instead of per phrase.
 
+### Speaker-turn detection (diarization)
+
+With the tinydiarize model (`WhisperModel.smallEnTdrz`, English only),
+`diarize: true` marks the segments after which the speaker changes:
+
+```dart
+final result = await controller.transcribe(
+  model: WhisperModel.smallEnTdrz,
+  audioPath: '/path/to/audio.wav',
+  lang: 'en',
+  diarize: true,
+  withSegments: true,
+);
+
+for (final segment in result?.transcription.segments ?? []) {
+  print('${segment.text}${segment.speakerTurnNext ? ' [speaker turn]' : ''}');
+}
+```
+
+This detects turn boundaries; it does not label or count speakers. With
+regular models `diarize` has no effect.
+
 The model is downloaded automatically on first use. Non-WAV input is
 converted with the bundled FFmpeg — except on Windows and Linux, where
 FFmpeg is not bundled: an `ffmpeg` executable on `PATH` is used when
