@@ -179,6 +179,39 @@ Available on both `transcribe` and `transcribeLive`:
 | `noContext` | `false` | Stops whisper from conditioning on prior-segment transcripts (like Python whisper's `condition_on_previous_text=False`). Helps against hallucinated repetition on short, independent utterances. |
 | `suppressNonSpeechTokens` | `false` | Suppresses bracketed annotations such as `[BLANK_AUDIO]` or `[music]`. Side effect: real sounds may decode as plausible-looking words instead, which is why the example keeps it off. |
 
+## Trimming silence with voice-activity detection (VAD)
+
+Push-to-talk and hold-to-record clips carry silence at the head and tail,
+and whisper tends to hallucinate over it or repeat the previous sentence.
+`transcribe` can run whisper.cpp's built-in [Silero VAD](https://github.com/snakers4/silero-vad)
+first, so only the detected speech is decoded. Download a Silero ggml model
+(~1 MB, e.g. `ggml-silero-v5.1.2.bin` from
+[ggml-org/whisper-vad](https://huggingface.co/ggml-org/whisper-vad)), ship
+or download it like the whisper model, and pass its path:
+
+```dart
+final result = await controller.transcribe(
+  model: WhisperModel.base,
+  audioPath: audioPath,
+  vadModelPath: '/path/to/ggml-silero-v5.1.2.bin',
+  vadSpeechPadMs: 100, // optional; keeps clipped first/last words intact
+);
+```
+
+Good to know:
+
+- VAD is off unless `vadModelPath` is set. Segment timestamps still refer
+  to the original recording.
+- Audio with no detected speech returns an empty transcript.
+- A `vadModelPath` that cannot be opened fails the request with an error.
+- `vadSpeechPadMs` overrides the padding around each speech segment;
+  around 100 ms works well for dictation, much larger values can garble
+  segment boundaries.
+- Applies to `transcribe` only; live sessions have their own energy gate.
+- With `keepModelLoaded`, keep the VAD setting the same across requests: a
+  parked model that ran VAD is only reused by requests with the same VAD
+  model, anything else loads the model fresh.
+
 ## Keeping the model loaded between transcriptions
 
 By default every `transcribe` call loads the model from disk (seconds for

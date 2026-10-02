@@ -119,6 +119,14 @@ static struct
 {
     struct whisper_context *ctx = nullptr; // parked context; nullptr = empty
     std::string model;                     // model path ctx was loaded from
+    // VAD model the parked ctx has decoded with; empty = never ran VAD.
+    // whisper.cpp keeps VAD state on the context (the VAD model itself and
+    // the timestamp mapping of the last VAD run) and only resets it when
+    // VAD runs again, so a context that ran VAD may only be reused by a
+    // request with the same VAD model — otherwise a non-VAD request would
+    // get its segment timestamps remapped through a stale speech map, and
+    // a request with another VAD model would silently get the first one.
+    std::string vad_model;
     std::mutex mutex;
 } g_model_cache;
 
@@ -130,6 +138,7 @@ json release_model() noexcept
         parked = g_model_cache.ctx;
         g_model_cache.ctx = nullptr;
         g_model_cache.model.clear();
+        g_model_cache.vad_model.clear();
     }
     if (parked != nullptr)
     {
@@ -195,6 +204,20 @@ json transcribe(json jsonBody) noexcept
         return jsonResult;
     }
 
+    // whisper_full() only reports a generic failure for a bad VAD model;
+    // catch the common case (wrong path) up front with a useful message.
+    if (!params.vad_model.empty())
+    {
+        FILE *vad_file = fopen(params.vad_model.c_str(), "rb");
+        if (vad_file == nullptr)
+        {
+            jsonResult["@type"] = "error";
+            jsonResult["message"] = "failed to open VAD model " + params.vad_model;
+            return jsonResult;
+        }
+        fclose(vad_file);
+    }
+
     if (params.seed < 0)
     {
         params.seed = time(NULL);
@@ -202,15 +225,21 @@ json transcribe(json jsonBody) noexcept
 
     // whisper init: take the parked context when the model path matches
     // (leaving the cache empty while it is in use), otherwise load from disk.
+    // A context that ran VAD is only reused by a request with the same VAD
+    // model (see g_model_cache.vad_model); any other request loads fresh.
     bool reused_ctx = false;
+    std::string ctx_vad_model; // VAD model this ctx has decoded with
     struct whisper_context *ctx = nullptr;
     {
         std::lock_guard<std::mutex> lock(g_model_cache.mutex);
-        if (g_model_cache.ctx != nullptr && g_model_cache.model == params.model)
+        if (g_model_cache.ctx != nullptr && g_model_cache.model == params.model &&
+            (g_model_cache.vad_model.empty() || g_model_cache.vad_model == params.vad_model))
         {
             ctx = g_model_cache.ctx;
+            ctx_vad_model = g_model_cache.vad_model;
             g_model_cache.ctx = nullptr;
             g_model_cache.model.clear();
+            g_model_cache.vad_model.clear();
             reused_ctx = true;
         }
     }
@@ -243,6 +272,7 @@ json transcribe(json jsonBody) noexcept
             displaced = g_model_cache.ctx;
             g_model_cache.ctx = ctx;
             g_model_cache.model = params.model;
+            g_model_cache.vad_model = ctx_vad_model;
         }
         // A concurrent request may have parked its own context while this
         // one was decoding; only one can stay resident.
@@ -357,6 +387,7 @@ json transcribe(json jsonBody) noexcept
         if (!params.vad_model.empty()) {
             wparams.vad = true;
             wparams.vad_model_path = params.vad_model.c_str();
+            ctx_vad_model = params.vad_model;
             wparams.vad_params = whisper_vad_default_params();
             if (params.vad_speech_pad_ms >= 0) {
                 wparams.vad_params.speech_pad_ms = params.vad_speech_pad_ms;
@@ -522,6 +553,7 @@ struct whisper_stream_state
     std::string language = "en";
     std::string prompt;
     std::string model;           // model path ctx was loaded from
+    std::string vad_model;       // g_model_cache.vad_model of a borrowed ctx
     int n_threads = 4;
     bool translate = false;
     bool suppress_nst = false;
@@ -549,6 +581,7 @@ static void stream_dispose_ctx()
             displaced = g_model_cache.ctx;
             g_model_cache.ctx = g_stream.ctx;
             g_model_cache.model = g_stream.model;
+            g_model_cache.vad_model = g_stream.vad_model;
         }
         if (displaced != nullptr) {
             whisper_free(displaced);
@@ -683,13 +716,19 @@ extern "C"
         // Fresh-session semantics come for free: every stream decode runs
         // with no_context = true, which clears whisper's rolling text
         // history.
+        // A VAD-tagged context is fine to borrow: stream decodes never run
+        // VAD and only read segment text, never the (remapped) timestamps.
+        // The tag rides along so the context is parked back with it.
         bool borrowed = false;
+        g_stream.vad_model.clear();
         {
             std::lock_guard<std::mutex> cache_lock(g_model_cache.mutex);
             if (g_model_cache.ctx != nullptr && g_model_cache.model == model) {
                 g_stream.ctx = g_model_cache.ctx;
+                g_stream.vad_model = g_model_cache.vad_model;
                 g_model_cache.ctx = nullptr;
                 g_model_cache.model.clear();
+                g_model_cache.vad_model.clear();
                 borrowed = true;
             }
         }

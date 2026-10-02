@@ -102,6 +102,10 @@ class WhisperController {
   /// request, so the next transcription with the same model skips the
   /// multi-second load — see [TranscribeRequest.keepModelLoaded]. Release
   /// it with [releaseModel].
+  ///
+  /// [vadModelPath] enables whisper.cpp's built-in Silero VAD, trimming
+  /// non-speech before decoding; [vadSpeechPadMs] overrides the padding
+  /// kept around detected speech — see [TranscribeRequest.vadModelPath].
   Future<TranscribeResult?> transcribe({
     required WhisperModel model,
     required String audioPath,
@@ -113,6 +117,8 @@ class WhisperController {
     bool withSegments = false,
     bool splitOnWord = false,
     bool keepModelLoaded = false,
+    String? vadModelPath,
+    int? vadSpeechPadMs,
     void Function(int percent)? onProgress,
   }) async {
     await initModel(model);
@@ -135,6 +141,8 @@ class WhisperController {
           noContext: noContext,
           suppressNonSpeechTokens: suppressNonSpeechTokens,
           keepModelLoaded: keepModelLoaded,
+          vadModelPath: vadModelPath,
+          vadSpeechPadMs: vadSpeechPadMs,
         ),
         modelPath: _modelPath,
         onProgress: onProgress,

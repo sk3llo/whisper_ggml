@@ -80,7 +80,15 @@ mixin _$TranscribeRequest {
 /// shorten.
 ///
 /// Null (default) leaves VAD off, matching the behaviour of every
-/// previous version.
+/// previous version. A path that cannot be opened fails the request
+/// with an error instead of silently transcribing without VAD.
+///
+/// With [keepModelLoaded], a parked model that has run VAD is only
+/// reused by requests with the same [vadModelPath]; a request without
+/// VAD, or with a different VAD model, loads the model fresh (whisper.cpp
+/// keeps VAD state on the model context, and reusing it would shift the
+/// timestamps of a non-VAD request). Keep the setting constant across a
+/// dictation session to stay on the warm path.
  String? get vadModelPath;/// Padding in milliseconds kept around each detected speech segment
 /// when [vadModelPath] is set, so clipped first and last words stay
 /// intact. Null keeps whisper.cpp's default, and negative values are
@@ -385,7 +393,15 @@ class _TranscribeRequest extends TranscribeRequest {
 /// shorten.
 ///
 /// Null (default) leaves VAD off, matching the behaviour of every
-/// previous version.
+/// previous version. A path that cannot be opened fails the request
+/// with an error instead of silently transcribing without VAD.
+///
+/// With [keepModelLoaded], a parked model that has run VAD is only
+/// reused by requests with the same [vadModelPath]; a request without
+/// VAD, or with a different VAD model, loads the model fresh (whisper.cpp
+/// keeps VAD state on the model context, and reusing it would shift the
+/// timestamps of a non-VAD request). Keep the setting constant across a
+/// dictation session to stay on the warm path.
 @override@JsonKey() final  String? vadModelPath;
 /// Padding in milliseconds kept around each detected speech segment
 /// when [vadModelPath] is set, so clipped first and last words stay
