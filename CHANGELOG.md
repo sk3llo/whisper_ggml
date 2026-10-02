@@ -1,3 +1,9 @@
+## 2.7.1
+
+* Fixed Android builds failing at `checkDebugAarMetadata` on newer toolchains ([#30](https://github.com/sk3llo/whisper_ggml/issues/30)): the plugin compiled against `compileSdk 34` while its own dependency `ffmpeg_kit_flutter_new_min` 2.1.0 requires consumers to compile against 35 or later, and an app cannot override a plugin's `compileSdk`. The plugin now uses `compileSdk 36`, Flutter's own default. Thanks @d4kr for the report
+* Corrected the Android minimum to **API 24** (`minSdkVersion` 21 → 24, README updated). ffmpeg-kit already required API 24, so apps below it never built; the plugin's declaration now says so instead of advertising API 21
+* Example app: bumped the Android Gradle Plugin from 8.4.0 to 8.7.0 (Flutter 3.44 rejects AGP below 8.6.0, so the example no longer built for Android)
+
 ## 2.7.0
 
 * Opt-in Silero voice-activity detection for `transcribe` ([#29](https://github.com/sk3llo/whisper_ggml/issues/29)): pass `vadModelPath` (controller and low-level API) to run whisper.cpp's built-in VAD before decoding, so only detected speech is transcribed — the standard defence against whisper hallucinating or looping over the leading/trailing silence of push-to-talk recordings. `vadSpeechPadMs` optionally overrides the padding kept around speech. Off by default; implemented in all three native shims. Contributed by @Ranjan-Bhagat

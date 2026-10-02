@@ -39,7 +39,7 @@ on-device, no server, no API keys.
 
 | Platform | Minimum version |
 |----------|-----------------|
-| Android  | API 21          |
+| Android  | API 24          |
 | iOS      | 15.6            |
 | macOS    | 10.15           |
 | Windows  | 10 (x64)        |

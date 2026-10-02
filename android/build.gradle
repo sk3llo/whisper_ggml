@@ -26,7 +26,7 @@ android {
     namespace "com.devac.whisper_ggml"
     ndkVersion "29.0.13113456"
 
-    compileSdk 34
+    compileSdk 36
 
     // Invoke the shared CMake build with the Android Gradle Plugin.
     externalNativeBuild {
@@ -42,7 +42,7 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 24
         // Merged into consuming apps' R8 config: without these, release
         // builds can strip the bundled ffmpeg-kit classes, whose failed
         // registration aborts the plugin registrant and breaks unrelated
