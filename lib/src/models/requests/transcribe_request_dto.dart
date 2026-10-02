@@ -40,6 +40,12 @@ abstract class TranscribeRequestDto
     /// invokes with transcription progress (0–100); null disables it.
     @JsonKey(name: 'progress_callback') int? progressCallback,
     @JsonKey(name: 'keep_model_loaded') @Default(false) bool keepModelLoaded,
+
+    /// Silero VAD model path; null leaves VAD off on the native side.
+    @JsonKey(name: 'vad_model') String? vadModel,
+
+    /// speech_pad_ms override; null keeps whisper.cpp's default.
+    @JsonKey(name: 'vad_speech_pad_ms') int? vadSpeechPadMs,
   }) = _TranscribeRequestDto;
 
   /// Convert [request] to TranscribeRequestDto with specified [modelPath]
@@ -68,6 +74,8 @@ abstract class TranscribeRequestDto
       suppressNonSpeechTokens: request.suppressNonSpeechTokens,
       progressCallback: progressCallbackAddress,
       keepModelLoaded: request.keepModelLoaded,
+      vadModel: request.vadModelPath,
+      vadSpeechPadMs: request.vadSpeechPadMs,
     );
   }
   const TranscribeRequestDto._();

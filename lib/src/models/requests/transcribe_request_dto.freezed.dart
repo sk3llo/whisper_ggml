@@ -17,7 +17,9 @@ mixin _$TranscribeRequestDto {
 
  String get audio; String get model;@JsonKey(name: 'is_translate') bool get isTranslate; int get threads;@JsonKey(name: 'is_verbose') bool get isVerbose; String get language;@JsonKey(name: 'is_special_tokens') bool get isSpecialTokens;@JsonKey(name: 'is_no_timestamps') bool get isNoTimestamps;@JsonKey(name: 'n_processors') int get nProcessors;@JsonKey(name: 'split_on_word') bool get splitOnWord;@JsonKey(name: 'no_fallback') bool get noFallback;@JsonKey(name: 'is_realtime') bool get isRealtime; bool get diarize;@JsonKey(name: 'speed_up') bool get speedUp;@JsonKey(name: 'initial_prompt') String? get initialPrompt;@JsonKey(name: 'no_context') bool get noContext;@JsonKey(name: 'suppress_non_speech_tokens') bool get suppressNonSpeechTokens;/// Address of a `NativeCallable<Void Function(Int32)>` the native layer
 /// invokes with transcription progress (0–100); null disables it.
-@JsonKey(name: 'progress_callback') int? get progressCallback;@JsonKey(name: 'keep_model_loaded') bool get keepModelLoaded;
+@JsonKey(name: 'progress_callback') int? get progressCallback;@JsonKey(name: 'keep_model_loaded') bool get keepModelLoaded;/// Silero VAD model path; null leaves VAD off on the native side.
+@JsonKey(name: 'vad_model') String? get vadModel;/// speech_pad_ms override; null keeps whisper.cpp's default.
+@JsonKey(name: 'vad_speech_pad_ms') int? get vadSpeechPadMs;
 /// Create a copy of TranscribeRequestDto
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,16 +32,16 @@ $TranscribeRequestDtoCopyWith<TranscribeRequestDto> get copyWith => _$Transcribe
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TranscribeRequestDto&&(identical(other.audio, audio) || other.audio == audio)&&(identical(other.model, model) || other.model == model)&&(identical(other.isTranslate, isTranslate) || other.isTranslate == isTranslate)&&(identical(other.threads, threads) || other.threads == threads)&&(identical(other.isVerbose, isVerbose) || other.isVerbose == isVerbose)&&(identical(other.language, language) || other.language == language)&&(identical(other.isSpecialTokens, isSpecialTokens) || other.isSpecialTokens == isSpecialTokens)&&(identical(other.isNoTimestamps, isNoTimestamps) || other.isNoTimestamps == isNoTimestamps)&&(identical(other.nProcessors, nProcessors) || other.nProcessors == nProcessors)&&(identical(other.splitOnWord, splitOnWord) || other.splitOnWord == splitOnWord)&&(identical(other.noFallback, noFallback) || other.noFallback == noFallback)&&(identical(other.isRealtime, isRealtime) || other.isRealtime == isRealtime)&&(identical(other.diarize, diarize) || other.diarize == diarize)&&(identical(other.speedUp, speedUp) || other.speedUp == speedUp)&&(identical(other.initialPrompt, initialPrompt) || other.initialPrompt == initialPrompt)&&(identical(other.noContext, noContext) || other.noContext == noContext)&&(identical(other.suppressNonSpeechTokens, suppressNonSpeechTokens) || other.suppressNonSpeechTokens == suppressNonSpeechTokens)&&(identical(other.progressCallback, progressCallback) || other.progressCallback == progressCallback)&&(identical(other.keepModelLoaded, keepModelLoaded) || other.keepModelLoaded == keepModelLoaded));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TranscribeRequestDto&&(identical(other.audio, audio) || other.audio == audio)&&(identical(other.model, model) || other.model == model)&&(identical(other.isTranslate, isTranslate) || other.isTranslate == isTranslate)&&(identical(other.threads, threads) || other.threads == threads)&&(identical(other.isVerbose, isVerbose) || other.isVerbose == isVerbose)&&(identical(other.language, language) || other.language == language)&&(identical(other.isSpecialTokens, isSpecialTokens) || other.isSpecialTokens == isSpecialTokens)&&(identical(other.isNoTimestamps, isNoTimestamps) || other.isNoTimestamps == isNoTimestamps)&&(identical(other.nProcessors, nProcessors) || other.nProcessors == nProcessors)&&(identical(other.splitOnWord, splitOnWord) || other.splitOnWord == splitOnWord)&&(identical(other.noFallback, noFallback) || other.noFallback == noFallback)&&(identical(other.isRealtime, isRealtime) || other.isRealtime == isRealtime)&&(identical(other.diarize, diarize) || other.diarize == diarize)&&(identical(other.speedUp, speedUp) || other.speedUp == speedUp)&&(identical(other.initialPrompt, initialPrompt) || other.initialPrompt == initialPrompt)&&(identical(other.noContext, noContext) || other.noContext == noContext)&&(identical(other.suppressNonSpeechTokens, suppressNonSpeechTokens) || other.suppressNonSpeechTokens == suppressNonSpeechTokens)&&(identical(other.progressCallback, progressCallback) || other.progressCallback == progressCallback)&&(identical(other.keepModelLoaded, keepModelLoaded) || other.keepModelLoaded == keepModelLoaded)&&(identical(other.vadModel, vadModel) || other.vadModel == vadModel)&&(identical(other.vadSpeechPadMs, vadSpeechPadMs) || other.vadSpeechPadMs == vadSpeechPadMs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,audio,model,isTranslate,threads,isVerbose,language,isSpecialTokens,isNoTimestamps,nProcessors,splitOnWord,noFallback,isRealtime,diarize,speedUp,initialPrompt,noContext,suppressNonSpeechTokens,progressCallback,keepModelLoaded]);
+int get hashCode => Object.hashAll([runtimeType,audio,model,isTranslate,threads,isVerbose,language,isSpecialTokens,isNoTimestamps,nProcessors,splitOnWord,noFallback,isRealtime,diarize,speedUp,initialPrompt,noContext,suppressNonSpeechTokens,progressCallback,keepModelLoaded,vadModel,vadSpeechPadMs]);
 
 @override
 String toString() {
-  return 'TranscribeRequestDto(audio: $audio, model: $model, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, isRealtime: $isRealtime, diarize: $diarize, speedUp: $speedUp, initialPrompt: $initialPrompt, noContext: $noContext, suppressNonSpeechTokens: $suppressNonSpeechTokens, progressCallback: $progressCallback, keepModelLoaded: $keepModelLoaded)';
+  return 'TranscribeRequestDto(audio: $audio, model: $model, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, isRealtime: $isRealtime, diarize: $diarize, speedUp: $speedUp, initialPrompt: $initialPrompt, noContext: $noContext, suppressNonSpeechTokens: $suppressNonSpeechTokens, progressCallback: $progressCallback, keepModelLoaded: $keepModelLoaded, vadModel: $vadModel, vadSpeechPadMs: $vadSpeechPadMs)';
 }
 
 
@@ -50,7 +52,7 @@ abstract mixin class $TranscribeRequestDtoCopyWith<$Res>  {
   factory $TranscribeRequestDtoCopyWith(TranscribeRequestDto value, $Res Function(TranscribeRequestDto) _then) = _$TranscribeRequestDtoCopyWithImpl;
 @useResult
 $Res call({
- String audio, String model,@JsonKey(name: 'is_translate') bool isTranslate, int threads,@JsonKey(name: 'is_verbose') bool isVerbose, String language,@JsonKey(name: 'is_special_tokens') bool isSpecialTokens,@JsonKey(name: 'is_no_timestamps') bool isNoTimestamps,@JsonKey(name: 'n_processors') int nProcessors,@JsonKey(name: 'split_on_word') bool splitOnWord,@JsonKey(name: 'no_fallback') bool noFallback,@JsonKey(name: 'is_realtime') bool isRealtime, bool diarize,@JsonKey(name: 'speed_up') bool speedUp,@JsonKey(name: 'initial_prompt') String? initialPrompt,@JsonKey(name: 'no_context') bool noContext,@JsonKey(name: 'suppress_non_speech_tokens') bool suppressNonSpeechTokens,@JsonKey(name: 'progress_callback') int? progressCallback,@JsonKey(name: 'keep_model_loaded') bool keepModelLoaded
+ String audio, String model,@JsonKey(name: 'is_translate') bool isTranslate, int threads,@JsonKey(name: 'is_verbose') bool isVerbose, String language,@JsonKey(name: 'is_special_tokens') bool isSpecialTokens,@JsonKey(name: 'is_no_timestamps') bool isNoTimestamps,@JsonKey(name: 'n_processors') int nProcessors,@JsonKey(name: 'split_on_word') bool splitOnWord,@JsonKey(name: 'no_fallback') bool noFallback,@JsonKey(name: 'is_realtime') bool isRealtime, bool diarize,@JsonKey(name: 'speed_up') bool speedUp,@JsonKey(name: 'initial_prompt') String? initialPrompt,@JsonKey(name: 'no_context') bool noContext,@JsonKey(name: 'suppress_non_speech_tokens') bool suppressNonSpeechTokens,@JsonKey(name: 'progress_callback') int? progressCallback,@JsonKey(name: 'keep_model_loaded') bool keepModelLoaded,@JsonKey(name: 'vad_model') String? vadModel,@JsonKey(name: 'vad_speech_pad_ms') int? vadSpeechPadMs
 });
 
 
@@ -67,7 +69,7 @@ class _$TranscribeRequestDtoCopyWithImpl<$Res>
 
 /// Create a copy of TranscribeRequestDto
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? audio = null,Object? model = null,Object? isTranslate = null,Object? threads = null,Object? isVerbose = null,Object? language = null,Object? isSpecialTokens = null,Object? isNoTimestamps = null,Object? nProcessors = null,Object? splitOnWord = null,Object? noFallback = null,Object? isRealtime = null,Object? diarize = null,Object? speedUp = null,Object? initialPrompt = freezed,Object? noContext = null,Object? suppressNonSpeechTokens = null,Object? progressCallback = freezed,Object? keepModelLoaded = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? audio = null,Object? model = null,Object? isTranslate = null,Object? threads = null,Object? isVerbose = null,Object? language = null,Object? isSpecialTokens = null,Object? isNoTimestamps = null,Object? nProcessors = null,Object? splitOnWord = null,Object? noFallback = null,Object? isRealtime = null,Object? diarize = null,Object? speedUp = null,Object? initialPrompt = freezed,Object? noContext = null,Object? suppressNonSpeechTokens = null,Object? progressCallback = freezed,Object? keepModelLoaded = null,Object? vadModel = freezed,Object? vadSpeechPadMs = freezed,}) {
   return _then(_self.copyWith(
 audio: null == audio ? _self.audio : audio // ignore: cast_nullable_to_non_nullable
 as String,model: null == model ? _self.model : model // ignore: cast_nullable_to_non_nullable
@@ -88,7 +90,9 @@ as String?,noContext: null == noContext ? _self.noContext : noContext // ignore:
 as bool,suppressNonSpeechTokens: null == suppressNonSpeechTokens ? _self.suppressNonSpeechTokens : suppressNonSpeechTokens // ignore: cast_nullable_to_non_nullable
 as bool,progressCallback: freezed == progressCallback ? _self.progressCallback : progressCallback // ignore: cast_nullable_to_non_nullable
 as int?,keepModelLoaded: null == keepModelLoaded ? _self.keepModelLoaded : keepModelLoaded // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,vadModel: freezed == vadModel ? _self.vadModel : vadModel // ignore: cast_nullable_to_non_nullable
+as String?,vadSpeechPadMs: freezed == vadSpeechPadMs ? _self.vadSpeechPadMs : vadSpeechPadMs // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 
@@ -173,10 +177,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String audio,  String model, @JsonKey(name: 'is_translate')  bool isTranslate,  int threads, @JsonKey(name: 'is_verbose')  bool isVerbose,  String language, @JsonKey(name: 'is_special_tokens')  bool isSpecialTokens, @JsonKey(name: 'is_no_timestamps')  bool isNoTimestamps, @JsonKey(name: 'n_processors')  int nProcessors, @JsonKey(name: 'split_on_word')  bool splitOnWord, @JsonKey(name: 'no_fallback')  bool noFallback, @JsonKey(name: 'is_realtime')  bool isRealtime,  bool diarize, @JsonKey(name: 'speed_up')  bool speedUp, @JsonKey(name: 'initial_prompt')  String? initialPrompt, @JsonKey(name: 'no_context')  bool noContext, @JsonKey(name: 'suppress_non_speech_tokens')  bool suppressNonSpeechTokens, @JsonKey(name: 'progress_callback')  int? progressCallback, @JsonKey(name: 'keep_model_loaded')  bool keepModelLoaded)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String audio,  String model, @JsonKey(name: 'is_translate')  bool isTranslate,  int threads, @JsonKey(name: 'is_verbose')  bool isVerbose,  String language, @JsonKey(name: 'is_special_tokens')  bool isSpecialTokens, @JsonKey(name: 'is_no_timestamps')  bool isNoTimestamps, @JsonKey(name: 'n_processors')  int nProcessors, @JsonKey(name: 'split_on_word')  bool splitOnWord, @JsonKey(name: 'no_fallback')  bool noFallback, @JsonKey(name: 'is_realtime')  bool isRealtime,  bool diarize, @JsonKey(name: 'speed_up')  bool speedUp, @JsonKey(name: 'initial_prompt')  String? initialPrompt, @JsonKey(name: 'no_context')  bool noContext, @JsonKey(name: 'suppress_non_speech_tokens')  bool suppressNonSpeechTokens, @JsonKey(name: 'progress_callback')  int? progressCallback, @JsonKey(name: 'keep_model_loaded')  bool keepModelLoaded, @JsonKey(name: 'vad_model')  String? vadModel, @JsonKey(name: 'vad_speech_pad_ms')  int? vadSpeechPadMs)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TranscribeRequestDto() when $default != null:
-return $default(_that.audio,_that.model,_that.isTranslate,_that.threads,_that.isVerbose,_that.language,_that.isSpecialTokens,_that.isNoTimestamps,_that.nProcessors,_that.splitOnWord,_that.noFallback,_that.isRealtime,_that.diarize,_that.speedUp,_that.initialPrompt,_that.noContext,_that.suppressNonSpeechTokens,_that.progressCallback,_that.keepModelLoaded);case _:
+return $default(_that.audio,_that.model,_that.isTranslate,_that.threads,_that.isVerbose,_that.language,_that.isSpecialTokens,_that.isNoTimestamps,_that.nProcessors,_that.splitOnWord,_that.noFallback,_that.isRealtime,_that.diarize,_that.speedUp,_that.initialPrompt,_that.noContext,_that.suppressNonSpeechTokens,_that.progressCallback,_that.keepModelLoaded,_that.vadModel,_that.vadSpeechPadMs);case _:
   return orElse();
 
 }
@@ -194,10 +198,10 @@ return $default(_that.audio,_that.model,_that.isTranslate,_that.threads,_that.is
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String audio,  String model, @JsonKey(name: 'is_translate')  bool isTranslate,  int threads, @JsonKey(name: 'is_verbose')  bool isVerbose,  String language, @JsonKey(name: 'is_special_tokens')  bool isSpecialTokens, @JsonKey(name: 'is_no_timestamps')  bool isNoTimestamps, @JsonKey(name: 'n_processors')  int nProcessors, @JsonKey(name: 'split_on_word')  bool splitOnWord, @JsonKey(name: 'no_fallback')  bool noFallback, @JsonKey(name: 'is_realtime')  bool isRealtime,  bool diarize, @JsonKey(name: 'speed_up')  bool speedUp, @JsonKey(name: 'initial_prompt')  String? initialPrompt, @JsonKey(name: 'no_context')  bool noContext, @JsonKey(name: 'suppress_non_speech_tokens')  bool suppressNonSpeechTokens, @JsonKey(name: 'progress_callback')  int? progressCallback, @JsonKey(name: 'keep_model_loaded')  bool keepModelLoaded)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String audio,  String model, @JsonKey(name: 'is_translate')  bool isTranslate,  int threads, @JsonKey(name: 'is_verbose')  bool isVerbose,  String language, @JsonKey(name: 'is_special_tokens')  bool isSpecialTokens, @JsonKey(name: 'is_no_timestamps')  bool isNoTimestamps, @JsonKey(name: 'n_processors')  int nProcessors, @JsonKey(name: 'split_on_word')  bool splitOnWord, @JsonKey(name: 'no_fallback')  bool noFallback, @JsonKey(name: 'is_realtime')  bool isRealtime,  bool diarize, @JsonKey(name: 'speed_up')  bool speedUp, @JsonKey(name: 'initial_prompt')  String? initialPrompt, @JsonKey(name: 'no_context')  bool noContext, @JsonKey(name: 'suppress_non_speech_tokens')  bool suppressNonSpeechTokens, @JsonKey(name: 'progress_callback')  int? progressCallback, @JsonKey(name: 'keep_model_loaded')  bool keepModelLoaded, @JsonKey(name: 'vad_model')  String? vadModel, @JsonKey(name: 'vad_speech_pad_ms')  int? vadSpeechPadMs)  $default,) {final _that = this;
 switch (_that) {
 case _TranscribeRequestDto():
-return $default(_that.audio,_that.model,_that.isTranslate,_that.threads,_that.isVerbose,_that.language,_that.isSpecialTokens,_that.isNoTimestamps,_that.nProcessors,_that.splitOnWord,_that.noFallback,_that.isRealtime,_that.diarize,_that.speedUp,_that.initialPrompt,_that.noContext,_that.suppressNonSpeechTokens,_that.progressCallback,_that.keepModelLoaded);case _:
+return $default(_that.audio,_that.model,_that.isTranslate,_that.threads,_that.isVerbose,_that.language,_that.isSpecialTokens,_that.isNoTimestamps,_that.nProcessors,_that.splitOnWord,_that.noFallback,_that.isRealtime,_that.diarize,_that.speedUp,_that.initialPrompt,_that.noContext,_that.suppressNonSpeechTokens,_that.progressCallback,_that.keepModelLoaded,_that.vadModel,_that.vadSpeechPadMs);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -214,10 +218,10 @@ return $default(_that.audio,_that.model,_that.isTranslate,_that.threads,_that.is
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String audio,  String model, @JsonKey(name: 'is_translate')  bool isTranslate,  int threads, @JsonKey(name: 'is_verbose')  bool isVerbose,  String language, @JsonKey(name: 'is_special_tokens')  bool isSpecialTokens, @JsonKey(name: 'is_no_timestamps')  bool isNoTimestamps, @JsonKey(name: 'n_processors')  int nProcessors, @JsonKey(name: 'split_on_word')  bool splitOnWord, @JsonKey(name: 'no_fallback')  bool noFallback, @JsonKey(name: 'is_realtime')  bool isRealtime,  bool diarize, @JsonKey(name: 'speed_up')  bool speedUp, @JsonKey(name: 'initial_prompt')  String? initialPrompt, @JsonKey(name: 'no_context')  bool noContext, @JsonKey(name: 'suppress_non_speech_tokens')  bool suppressNonSpeechTokens, @JsonKey(name: 'progress_callback')  int? progressCallback, @JsonKey(name: 'keep_model_loaded')  bool keepModelLoaded)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String audio,  String model, @JsonKey(name: 'is_translate')  bool isTranslate,  int threads, @JsonKey(name: 'is_verbose')  bool isVerbose,  String language, @JsonKey(name: 'is_special_tokens')  bool isSpecialTokens, @JsonKey(name: 'is_no_timestamps')  bool isNoTimestamps, @JsonKey(name: 'n_processors')  int nProcessors, @JsonKey(name: 'split_on_word')  bool splitOnWord, @JsonKey(name: 'no_fallback')  bool noFallback, @JsonKey(name: 'is_realtime')  bool isRealtime,  bool diarize, @JsonKey(name: 'speed_up')  bool speedUp, @JsonKey(name: 'initial_prompt')  String? initialPrompt, @JsonKey(name: 'no_context')  bool noContext, @JsonKey(name: 'suppress_non_speech_tokens')  bool suppressNonSpeechTokens, @JsonKey(name: 'progress_callback')  int? progressCallback, @JsonKey(name: 'keep_model_loaded')  bool keepModelLoaded, @JsonKey(name: 'vad_model')  String? vadModel, @JsonKey(name: 'vad_speech_pad_ms')  int? vadSpeechPadMs)?  $default,) {final _that = this;
 switch (_that) {
 case _TranscribeRequestDto() when $default != null:
-return $default(_that.audio,_that.model,_that.isTranslate,_that.threads,_that.isVerbose,_that.language,_that.isSpecialTokens,_that.isNoTimestamps,_that.nProcessors,_that.splitOnWord,_that.noFallback,_that.isRealtime,_that.diarize,_that.speedUp,_that.initialPrompt,_that.noContext,_that.suppressNonSpeechTokens,_that.progressCallback,_that.keepModelLoaded);case _:
+return $default(_that.audio,_that.model,_that.isTranslate,_that.threads,_that.isVerbose,_that.language,_that.isSpecialTokens,_that.isNoTimestamps,_that.nProcessors,_that.splitOnWord,_that.noFallback,_that.isRealtime,_that.diarize,_that.speedUp,_that.initialPrompt,_that.noContext,_that.suppressNonSpeechTokens,_that.progressCallback,_that.keepModelLoaded,_that.vadModel,_that.vadSpeechPadMs);case _:
   return null;
 
 }
@@ -229,7 +233,7 @@ return $default(_that.audio,_that.model,_that.isTranslate,_that.threads,_that.is
 @JsonSerializable()
 
 class _TranscribeRequestDto extends TranscribeRequestDto {
-  const _TranscribeRequestDto({required this.audio, required this.model, @JsonKey(name: 'is_translate') required this.isTranslate, required this.threads, @JsonKey(name: 'is_verbose') required this.isVerbose, required this.language, @JsonKey(name: 'is_special_tokens') required this.isSpecialTokens, @JsonKey(name: 'is_no_timestamps') required this.isNoTimestamps, @JsonKey(name: 'n_processors') required this.nProcessors, @JsonKey(name: 'split_on_word') required this.splitOnWord, @JsonKey(name: 'no_fallback') required this.noFallback, @JsonKey(name: 'is_realtime') required this.isRealtime, required this.diarize, @JsonKey(name: 'speed_up') required this.speedUp, @JsonKey(name: 'initial_prompt') this.initialPrompt, @JsonKey(name: 'no_context') this.noContext = false, @JsonKey(name: 'suppress_non_speech_tokens') this.suppressNonSpeechTokens = false, @JsonKey(name: 'progress_callback') this.progressCallback, @JsonKey(name: 'keep_model_loaded') this.keepModelLoaded = false}): super._();
+  const _TranscribeRequestDto({required this.audio, required this.model, @JsonKey(name: 'is_translate') required this.isTranslate, required this.threads, @JsonKey(name: 'is_verbose') required this.isVerbose, required this.language, @JsonKey(name: 'is_special_tokens') required this.isSpecialTokens, @JsonKey(name: 'is_no_timestamps') required this.isNoTimestamps, @JsonKey(name: 'n_processors') required this.nProcessors, @JsonKey(name: 'split_on_word') required this.splitOnWord, @JsonKey(name: 'no_fallback') required this.noFallback, @JsonKey(name: 'is_realtime') required this.isRealtime, required this.diarize, @JsonKey(name: 'speed_up') required this.speedUp, @JsonKey(name: 'initial_prompt') this.initialPrompt, @JsonKey(name: 'no_context') this.noContext = false, @JsonKey(name: 'suppress_non_speech_tokens') this.suppressNonSpeechTokens = false, @JsonKey(name: 'progress_callback') this.progressCallback, @JsonKey(name: 'keep_model_loaded') this.keepModelLoaded = false, @JsonKey(name: 'vad_model') this.vadModel, @JsonKey(name: 'vad_speech_pad_ms') this.vadSpeechPadMs}): super._();
   factory _TranscribeRequestDto.fromJson(Map<String, dynamic> json) => _$TranscribeRequestDtoFromJson(json);
 
 @override final  String audio;
@@ -253,6 +257,10 @@ class _TranscribeRequestDto extends TranscribeRequestDto {
 /// invokes with transcription progress (0–100); null disables it.
 @override@JsonKey(name: 'progress_callback') final  int? progressCallback;
 @override@JsonKey(name: 'keep_model_loaded') final  bool keepModelLoaded;
+/// Silero VAD model path; null leaves VAD off on the native side.
+@override@JsonKey(name: 'vad_model') final  String? vadModel;
+/// speech_pad_ms override; null keeps whisper.cpp's default.
+@override@JsonKey(name: 'vad_speech_pad_ms') final  int? vadSpeechPadMs;
 
 /// Create a copy of TranscribeRequestDto
 /// with the given fields replaced by the non-null parameter values.
@@ -267,16 +275,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TranscribeRequestDto&&(identical(other.audio, audio) || other.audio == audio)&&(identical(other.model, model) || other.model == model)&&(identical(other.isTranslate, isTranslate) || other.isTranslate == isTranslate)&&(identical(other.threads, threads) || other.threads == threads)&&(identical(other.isVerbose, isVerbose) || other.isVerbose == isVerbose)&&(identical(other.language, language) || other.language == language)&&(identical(other.isSpecialTokens, isSpecialTokens) || other.isSpecialTokens == isSpecialTokens)&&(identical(other.isNoTimestamps, isNoTimestamps) || other.isNoTimestamps == isNoTimestamps)&&(identical(other.nProcessors, nProcessors) || other.nProcessors == nProcessors)&&(identical(other.splitOnWord, splitOnWord) || other.splitOnWord == splitOnWord)&&(identical(other.noFallback, noFallback) || other.noFallback == noFallback)&&(identical(other.isRealtime, isRealtime) || other.isRealtime == isRealtime)&&(identical(other.diarize, diarize) || other.diarize == diarize)&&(identical(other.speedUp, speedUp) || other.speedUp == speedUp)&&(identical(other.initialPrompt, initialPrompt) || other.initialPrompt == initialPrompt)&&(identical(other.noContext, noContext) || other.noContext == noContext)&&(identical(other.suppressNonSpeechTokens, suppressNonSpeechTokens) || other.suppressNonSpeechTokens == suppressNonSpeechTokens)&&(identical(other.progressCallback, progressCallback) || other.progressCallback == progressCallback)&&(identical(other.keepModelLoaded, keepModelLoaded) || other.keepModelLoaded == keepModelLoaded));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TranscribeRequestDto&&(identical(other.audio, audio) || other.audio == audio)&&(identical(other.model, model) || other.model == model)&&(identical(other.isTranslate, isTranslate) || other.isTranslate == isTranslate)&&(identical(other.threads, threads) || other.threads == threads)&&(identical(other.isVerbose, isVerbose) || other.isVerbose == isVerbose)&&(identical(other.language, language) || other.language == language)&&(identical(other.isSpecialTokens, isSpecialTokens) || other.isSpecialTokens == isSpecialTokens)&&(identical(other.isNoTimestamps, isNoTimestamps) || other.isNoTimestamps == isNoTimestamps)&&(identical(other.nProcessors, nProcessors) || other.nProcessors == nProcessors)&&(identical(other.splitOnWord, splitOnWord) || other.splitOnWord == splitOnWord)&&(identical(other.noFallback, noFallback) || other.noFallback == noFallback)&&(identical(other.isRealtime, isRealtime) || other.isRealtime == isRealtime)&&(identical(other.diarize, diarize) || other.diarize == diarize)&&(identical(other.speedUp, speedUp) || other.speedUp == speedUp)&&(identical(other.initialPrompt, initialPrompt) || other.initialPrompt == initialPrompt)&&(identical(other.noContext, noContext) || other.noContext == noContext)&&(identical(other.suppressNonSpeechTokens, suppressNonSpeechTokens) || other.suppressNonSpeechTokens == suppressNonSpeechTokens)&&(identical(other.progressCallback, progressCallback) || other.progressCallback == progressCallback)&&(identical(other.keepModelLoaded, keepModelLoaded) || other.keepModelLoaded == keepModelLoaded)&&(identical(other.vadModel, vadModel) || other.vadModel == vadModel)&&(identical(other.vadSpeechPadMs, vadSpeechPadMs) || other.vadSpeechPadMs == vadSpeechPadMs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,audio,model,isTranslate,threads,isVerbose,language,isSpecialTokens,isNoTimestamps,nProcessors,splitOnWord,noFallback,isRealtime,diarize,speedUp,initialPrompt,noContext,suppressNonSpeechTokens,progressCallback,keepModelLoaded]);
+int get hashCode => Object.hashAll([runtimeType,audio,model,isTranslate,threads,isVerbose,language,isSpecialTokens,isNoTimestamps,nProcessors,splitOnWord,noFallback,isRealtime,diarize,speedUp,initialPrompt,noContext,suppressNonSpeechTokens,progressCallback,keepModelLoaded,vadModel,vadSpeechPadMs]);
 
 @override
 String toString() {
-  return 'TranscribeRequestDto(audio: $audio, model: $model, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, isRealtime: $isRealtime, diarize: $diarize, speedUp: $speedUp, initialPrompt: $initialPrompt, noContext: $noContext, suppressNonSpeechTokens: $suppressNonSpeechTokens, progressCallback: $progressCallback, keepModelLoaded: $keepModelLoaded)';
+  return 'TranscribeRequestDto(audio: $audio, model: $model, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, isRealtime: $isRealtime, diarize: $diarize, speedUp: $speedUp, initialPrompt: $initialPrompt, noContext: $noContext, suppressNonSpeechTokens: $suppressNonSpeechTokens, progressCallback: $progressCallback, keepModelLoaded: $keepModelLoaded, vadModel: $vadModel, vadSpeechPadMs: $vadSpeechPadMs)';
 }
 
 
@@ -287,7 +295,7 @@ abstract mixin class _$TranscribeRequestDtoCopyWith<$Res> implements $Transcribe
   factory _$TranscribeRequestDtoCopyWith(_TranscribeRequestDto value, $Res Function(_TranscribeRequestDto) _then) = __$TranscribeRequestDtoCopyWithImpl;
 @override @useResult
 $Res call({
- String audio, String model,@JsonKey(name: 'is_translate') bool isTranslate, int threads,@JsonKey(name: 'is_verbose') bool isVerbose, String language,@JsonKey(name: 'is_special_tokens') bool isSpecialTokens,@JsonKey(name: 'is_no_timestamps') bool isNoTimestamps,@JsonKey(name: 'n_processors') int nProcessors,@JsonKey(name: 'split_on_word') bool splitOnWord,@JsonKey(name: 'no_fallback') bool noFallback,@JsonKey(name: 'is_realtime') bool isRealtime, bool diarize,@JsonKey(name: 'speed_up') bool speedUp,@JsonKey(name: 'initial_prompt') String? initialPrompt,@JsonKey(name: 'no_context') bool noContext,@JsonKey(name: 'suppress_non_speech_tokens') bool suppressNonSpeechTokens,@JsonKey(name: 'progress_callback') int? progressCallback,@JsonKey(name: 'keep_model_loaded') bool keepModelLoaded
+ String audio, String model,@JsonKey(name: 'is_translate') bool isTranslate, int threads,@JsonKey(name: 'is_verbose') bool isVerbose, String language,@JsonKey(name: 'is_special_tokens') bool isSpecialTokens,@JsonKey(name: 'is_no_timestamps') bool isNoTimestamps,@JsonKey(name: 'n_processors') int nProcessors,@JsonKey(name: 'split_on_word') bool splitOnWord,@JsonKey(name: 'no_fallback') bool noFallback,@JsonKey(name: 'is_realtime') bool isRealtime, bool diarize,@JsonKey(name: 'speed_up') bool speedUp,@JsonKey(name: 'initial_prompt') String? initialPrompt,@JsonKey(name: 'no_context') bool noContext,@JsonKey(name: 'suppress_non_speech_tokens') bool suppressNonSpeechTokens,@JsonKey(name: 'progress_callback') int? progressCallback,@JsonKey(name: 'keep_model_loaded') bool keepModelLoaded,@JsonKey(name: 'vad_model') String? vadModel,@JsonKey(name: 'vad_speech_pad_ms') int? vadSpeechPadMs
 });
 
 
@@ -304,7 +312,7 @@ class __$TranscribeRequestDtoCopyWithImpl<$Res>
 
 /// Create a copy of TranscribeRequestDto
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? audio = null,Object? model = null,Object? isTranslate = null,Object? threads = null,Object? isVerbose = null,Object? language = null,Object? isSpecialTokens = null,Object? isNoTimestamps = null,Object? nProcessors = null,Object? splitOnWord = null,Object? noFallback = null,Object? isRealtime = null,Object? diarize = null,Object? speedUp = null,Object? initialPrompt = freezed,Object? noContext = null,Object? suppressNonSpeechTokens = null,Object? progressCallback = freezed,Object? keepModelLoaded = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? audio = null,Object? model = null,Object? isTranslate = null,Object? threads = null,Object? isVerbose = null,Object? language = null,Object? isSpecialTokens = null,Object? isNoTimestamps = null,Object? nProcessors = null,Object? splitOnWord = null,Object? noFallback = null,Object? isRealtime = null,Object? diarize = null,Object? speedUp = null,Object? initialPrompt = freezed,Object? noContext = null,Object? suppressNonSpeechTokens = null,Object? progressCallback = freezed,Object? keepModelLoaded = null,Object? vadModel = freezed,Object? vadSpeechPadMs = freezed,}) {
   return _then(_TranscribeRequestDto(
 audio: null == audio ? _self.audio : audio // ignore: cast_nullable_to_non_nullable
 as String,model: null == model ? _self.model : model // ignore: cast_nullable_to_non_nullable
@@ -325,7 +333,9 @@ as String?,noContext: null == noContext ? _self.noContext : noContext // ignore:
 as bool,suppressNonSpeechTokens: null == suppressNonSpeechTokens ? _self.suppressNonSpeechTokens : suppressNonSpeechTokens // ignore: cast_nullable_to_non_nullable
 as bool,progressCallback: freezed == progressCallback ? _self.progressCallback : progressCallback // ignore: cast_nullable_to_non_nullable
 as int?,keepModelLoaded: null == keepModelLoaded ? _self.keepModelLoaded : keepModelLoaded // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,vadModel: freezed == vadModel ? _self.vadModel : vadModel // ignore: cast_nullable_to_non_nullable
+as String?,vadSpeechPadMs: freezed == vadSpeechPadMs ? _self.vadSpeechPadMs : vadSpeechPadMs // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 

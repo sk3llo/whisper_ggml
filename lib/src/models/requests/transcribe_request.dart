@@ -83,6 +83,28 @@ abstract class TranscribeRequest with _$TranscribeRequest {
     /// Default `false` preserves the load-per-request behaviour of every
     /// previous version.
     @Default(false) bool keepModelLoaded,
+
+    /// Path to a Silero VAD model (e.g. `ggml-silero-v5.1.2.bin`),
+    /// enabling whisper.cpp's built-in voice-activity detection for this
+    /// request.
+    ///
+    /// VAD trims non-speech from the audio before decoding — the standard
+    /// defence against whisper hallucinating or looping over the leading
+    /// and trailing silence of push-to-talk recordings. The VAD models are
+    /// small (~1 MB) and add little latency relative to the decode they
+    /// shorten.
+    ///
+    /// Null (default) leaves VAD off, matching the behaviour of every
+    /// previous version.
+    @Default(null) String? vadModelPath,
+
+    /// Padding in milliseconds kept around each detected speech segment
+    /// when [vadModelPath] is set, so clipped first and last words stay
+    /// intact. Null keeps whisper.cpp's default, and negative values are
+    /// treated the same as null. Values around 100 ms work well for
+    /// push-to-talk; much larger values can garble segment boundaries.
+    /// Ignored when [vadModelPath] is null.
+    @Default(null) int? vadSpeechPadMs,
   }) = _TranscribeRequest;
   const TranscribeRequest._();
 }

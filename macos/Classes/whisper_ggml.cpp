@@ -147,6 +147,13 @@ struct whisper_params
     // Address of a Dart NativeCallable<Void Function(Int32)>; 0 = none.
     uint64_t progress_cb_addr = 0;
 
+    // Silero VAD (whisper.cpp built-in): trims non-speech before decoding,
+    // which stops whisper hallucinating or looping over leading/trailing
+    // silence in push-to-talk recordings. Empty = VAD off (default).
+    std::string vad_model;
+    // speech_pad_ms override; negative keeps whisper.cpp's default.
+    int32_t vad_speech_pad_ms = -1;
+
     std::string language = "id";
     std::string prompt;
     std::string model = "models/ggml-model-whisper-small.bin";
@@ -193,6 +200,14 @@ json transcribe(json jsonBody)
     if (jsonBody.contains("progress_callback") && jsonBody["progress_callback"].is_number_unsigned())
     {
         params.progress_cb_addr = jsonBody["progress_callback"].get<uint64_t>();
+    }
+    if (jsonBody.contains("vad_model") && jsonBody["vad_model"].is_string())
+    {
+        params.vad_model = jsonBody["vad_model"].get<std::string>();
+    }
+    if (jsonBody.contains("vad_speech_pad_ms") && jsonBody["vad_speech_pad_ms"].is_number_integer())
+    {
+        params.vad_speech_pad_ms = jsonBody["vad_speech_pad_ms"].get<int32_t>();
     }
     json jsonResult;
     jsonResult["@type"] = "transcribe";
@@ -336,6 +351,17 @@ json transcribe(json jsonBody)
         }
         wparams.no_context = params.no_context;
         wparams.suppress_nst = params.suppress_nst;
+
+        // params.vad_model outlives whisper_full(), so the pointer stays
+        // valid for the whole decode.
+        if (!params.vad_model.empty()) {
+            wparams.vad = true;
+            wparams.vad_model_path = params.vad_model.c_str();
+            wparams.vad_params = whisper_vad_default_params();
+            if (params.vad_speech_pad_ms >= 0) {
+                wparams.vad_params.speech_pad_ms = params.vad_speech_pad_ms;
+            }
+        }
 
         if (params.split_on_word) {
             wparams.max_len = 1;

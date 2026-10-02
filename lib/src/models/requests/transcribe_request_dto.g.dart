@@ -28,6 +28,8 @@ _TranscribeRequestDto _$TranscribeRequestDtoFromJson(
   suppressNonSpeechTokens: json['suppress_non_speech_tokens'] as bool? ?? false,
   progressCallback: (json['progress_callback'] as num?)?.toInt(),
   keepModelLoaded: json['keep_model_loaded'] as bool? ?? false,
+  vadModel: json['vad_model'] as String?,
+  vadSpeechPadMs: (json['vad_speech_pad_ms'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$TranscribeRequestDtoToJson(
@@ -52,4 +54,6 @@ Map<String, dynamic> _$TranscribeRequestDtoToJson(
   'suppress_non_speech_tokens': instance.suppressNonSpeechTokens,
   'progress_callback': instance.progressCallback,
   'keep_model_loaded': instance.keepModelLoaded,
+  'vad_model': instance.vadModel,
+  'vad_speech_pad_ms': instance.vadSpeechPadMs,
 };
