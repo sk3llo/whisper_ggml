@@ -49,7 +49,7 @@ on-device, no server, no API keys.
 
 ```yaml
 dependencies:
-  whisper_ggml: ^2.6.0
+  whisper_ggml: ^2.7.0
 ```
 
 Requires Dart 3.7+ (Flutter 3.29+).

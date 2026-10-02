@@ -1,4 +1,4 @@
-## Unreleased
+## 2.7.0
 
 * Opt-in Silero voice-activity detection for `transcribe` ([#29](https://github.com/sk3llo/whisper_ggml/issues/29)): pass `vadModelPath` (controller and low-level API) to run whisper.cpp's built-in VAD before decoding, so only detected speech is transcribed — the standard defence against whisper hallucinating or looping over the leading/trailing silence of push-to-talk recordings. `vadSpeechPadMs` optionally overrides the padding kept around speech. Off by default; implemented in all three native shims. Contributed by @Ranjan-Bhagat
 * Segment timestamps keep referring to the original recording; speech-free audio returns an empty transcript; a VAD model path that cannot be opened fails the request with `failed to open VAD model …` instead of a generic error
