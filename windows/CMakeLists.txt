@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # The native sources are shared with Android; both platforms build the same
-# vendored whisper.cpp v1.9.1 (CPU backend) plus the JSON request/stream API
+# vendored whisper.cpp v1.9.5 (CPU backend) plus the JSON request/stream API
 # in main.cpp.
 set(W ${CMAKE_CURRENT_SOURCE_DIR}/../android/src/whisper/whisper.cpp)
 
@@ -44,9 +44,13 @@ file(GLOB GGML_SRC
     ${W}/ggml/src/ggml-cpu/arch/x86/*.c
     ${W}/ggml/src/ggml-cpu/arch/x86/*.cpp
     ${W}/ggml/src/ggml-cpu/amx/*.cpp
+    ${W}/ggml/src/ggml-cpu/tiled/*.cpp
 )
 
-add_library(whisper_ggml_core STATIC ${GGML_SRC} ${W}/src/whisper.cpp)
+add_library(whisper_ggml_core STATIC ${GGML_SRC}
+    ${W}/src/whisper.cpp
+    # stubbed out except on Apple arm64; whisper.cpp always references it
+    ${W}/src/aneforge/whisper-aneforge.cpp)
 set_target_properties(whisper_ggml_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(whisper_ggml_core PUBLIC
     ${W}/include
@@ -57,10 +61,9 @@ target_include_directories(whisper_ggml_core PUBLIC
 )
 target_compile_definitions(whisper_ggml_core PUBLIC GGML_USE_CPU)
 # Upstream generates these from git; we vendor a fixed release.
+# (GGML_VERSION/GGML_COMMIT live in the vendored ggml/src/ggml-version.h.)
 target_compile_definitions(whisper_ggml_core PRIVATE
-    GGML_VERSION="1.9.1"
-    GGML_COMMIT="whisper.cpp-v1.9.1"
-    WHISPER_VERSION="1.9.1"
+    WHISPER_VERSION="1.9.5"
 )
 
 # AVX2 matches upstream whisper.cpp's standard x64 Windows binaries and is

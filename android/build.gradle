@@ -54,7 +54,7 @@ android {
         }
         externalNativeBuild {
             cmake {
-                // No thin-LTO: with the full whisper.cpp v1.9.1 source tree
+                // No thin-LTO: with the full whisper.cpp v1.9.5 source tree
                 // it multiplies link time for no meaningful size win.
                 cFlags "-O3 -ffunction-sections -fdata-sections"
                 cppFlags "-O3 -ffunction-sections -fdata-sections"

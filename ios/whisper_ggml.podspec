@@ -33,7 +33,7 @@ A new Flutter FFI plugin project.
     # Flutter.framework does not contain a i386 slice.
     'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386',
     'CLANG_CXX_LANGUAGE_STANDARD' => 'c++20',
-    # whisper.cpp v1.9.1 (CPU backend) include roots
+    # whisper.cpp v1.9.5 (CPU backend) include roots
     'HEADER_SEARCH_PATHS' => [
       '"$(PODS_TARGET_SRCROOT)/Classes/whisper/include"',
       '"$(PODS_TARGET_SRCROOT)/Classes/whisper/ggml/include"',
@@ -41,7 +41,7 @@ A new Flutter FFI plugin project.
       '"$(PODS_TARGET_SRCROOT)/Classes/whisper/ggml/src/ggml-cpu"',
       '"$(PODS_TARGET_SRCROOT)/Classes/whisper/src"',
     ].join(' '),
-    'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) GGML_USE_CPU=1 GGML_USE_ACCELERATE=1 ACCELERATE_NEW_LAPACK=1 ACCELERATE_LAPACK_ILP64=1 GGML_VERSION=\"1.9.1\" GGML_COMMIT=\"whisper.cpp-v1.9.1\" WHISPER_VERSION=\"1.9.1\"',
+    'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) GGML_USE_CPU=1 GGML_USE_ACCELERATE=1 ACCELERATE_NEW_LAPACK=1 ACCELERATE_LAPACK_ILP64=1 WHISPER_VERSION=\"1.9.5\"',
     # keep inference usable in debug builds
     'GCC_OPTIMIZATION_LEVEL' => '3',
   }

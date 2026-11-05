@@ -12,7 +12,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(W ${CMAKE_CURRENT_SOURCE_DIR}/whisper.cpp)
 
-# Vendored whisper.cpp v1.9.1, CPU backend only. The arch/ sources are
+# Vendored whisper.cpp v1.9.5, CPU backend only. The arch/ sources are
 # internally guarded per architecture, so compiling arm + x86 on every ABI
 # is safe; the wrong-arch files compile to nothing.
 file(GLOB GGML_SRC
@@ -25,9 +25,13 @@ file(GLOB GGML_SRC
     ${W}/ggml/src/ggml-cpu/arch/x86/*.c
     ${W}/ggml/src/ggml-cpu/arch/x86/*.cpp
     ${W}/ggml/src/ggml-cpu/amx/*.cpp
+    ${W}/ggml/src/ggml-cpu/tiled/*.cpp
 )
 
-add_library(whisper STATIC ${GGML_SRC} ${W}/src/whisper.cpp)
+add_library(whisper STATIC ${GGML_SRC}
+    ${W}/src/whisper.cpp
+    # stubbed out except on Apple arm64; whisper.cpp always references it
+    ${W}/src/aneforge/whisper-aneforge.cpp)
 target_include_directories(whisper PUBLIC
     ${W}/include
     ${W}/ggml/include
@@ -36,11 +40,14 @@ target_include_directories(whisper PUBLIC
     ${W}/src
 )
 target_compile_definitions(whisper PUBLIC GGML_USE_CPU)
+# Bionic gates cpu_set_t / CPU_ZERO / sched_setaffinity (used by ggml's
+# Android thread-affinity code since v1.9.3) behind _GNU_SOURCE; upstream
+# ggml defines it for Linux and Android alike.
+target_compile_definitions(whisper PRIVATE _GNU_SOURCE)
 # Upstream generates these from git; we vendor a fixed release.
+# (GGML_VERSION/GGML_COMMIT live in the vendored ggml/src/ggml-version.h.)
 target_compile_definitions(whisper PRIVATE
-    GGML_VERSION="1.9.1"
-    GGML_COMMIT="whisper.cpp-v1.9.1"
-    WHISPER_VERSION="1.9.1"
+    WHISPER_VERSION="1.9.5"
 )
 # No -march override: the previous armv8.2-a+fp16 flags SIGILLed on
 # armv8.0 devices (issue #15). Baseline armv8-a runs everywhere.
