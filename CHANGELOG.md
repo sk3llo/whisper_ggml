@@ -1,3 +1,11 @@
+## 2.9.0
+
+* Upgraded the vendored whisper.cpp from v1.9.1 to **v1.9.5** (ggml 0.26.0) on all five platforms. No API changes: transcripts, segment timestamps, VAD and diarization output are identical to 2.8.1 in side-by-side runs, and transcription is as fast or up to ~8% faster on x64 (Windows, Linux)
+* Fixed a heap out-of-bounds read when transcribing extremely short audio (a WAV with a single sample), reproduced on 2.8.1 under AddressSanitizer through `transcribe` (upstream [whisper.cpp#3956](https://github.com/ggml-org/whisper.cpp/pull/3956))
+* Other upstream fixes that reach this plugin: the decoder RNG is re-seeded on every call, so a model kept resident with `keepModelLoaded` behaves like a freshly loaded one when decoding falls back to sampling ([whisper.cpp#4025](https://github.com/ggml-org/whisper.cpp/pull/4025)); an uninitialized read in the mel spectrogram is gone; malformed or truncated model files are rejected instead of overflowing memory; and on Android, ggml's CPU affinity mask is now actually applied
+* Build: the Android, Linux and Windows CMake files compile the new ggml CPU `tiled/` kernels and whisper.cpp's ANEForge encoder hook, which compiles to a stub everywhere except Apple arm64 and stays inactive unless the `ANEFORGE_ENCODER` environment variable is set. Android now defines `_GNU_SOURCE`, which ggml's thread-affinity code needs
+* Verified end to end through the public Dart API on macOS, the iOS simulator, the Android emulator, a physical Android phone and Linux x64, with an iOS arm64 device build and a native MSVC build on Windows x64
+
 ## 2.8.1
 
 * Fixed the iOS podspec overriding the host app's build settings ([#32](https://github.com/sk3llo/whisper_ggml/issues/32)): it declared `IPHONEOS_DEPLOYMENT_TARGET = 15.6` and `CLANG_CXX_LANGUAGE_STANDARD = c++20` in `s.xcconfig`, which CocoaPods applies to the app's `Pods-Runner` xcconfig as well as to the plugin. On iOS that xcconfig outranks project-level build settings, and Flutter's template sets the deployment target at the project level. An app targeting iOS 16 or later this way was built for 15.6 and failed to compile wherever it called iOS 16 APIs without `#available` checks. Both settings now apply only to the plugin's own target, which still builds for iOS 15.6 with C++20. Thanks @TechupBusiness for the report and the suggested fix

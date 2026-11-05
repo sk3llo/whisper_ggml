@@ -2,14 +2,14 @@
 
 # Whisper GGML
 
-_On-device speech-to-text for Flutter, powered by [whisper.cpp](https://github.com/ggml-org/whisper.cpp) v1.9.1._
+_On-device speech-to-text for Flutter, powered by [whisper.cpp](https://github.com/ggml-org/whisper.cpp) v1.9.5._
 
 <p align="center">
   <a href="https://pub.dev/packages/whisper_ggml">
      <img src="https://img.shields.io/pub/v/whisper_ggml?logo=dart&color=blue" alt="pub">
   </a>
   <a href="https://github.com/ggml-org/whisper.cpp">
-     <img src="https://img.shields.io/badge/whisper.cpp-v1.9.1-green" alt="whisper.cpp">
+     <img src="https://img.shields.io/badge/whisper.cpp-v1.9.5-green" alt="whisper.cpp">
   </a>
   <a href="https://buymeacoffee.com/sk3llo" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="21" width="114"></a>
 </p>
@@ -31,7 +31,7 @@ on-device, no server, no API keys.
   `'auto'` to detect.
 - 🎛 **Decoding controls** — vocabulary biasing, context conditioning, and
   non-speech token suppression exposed from whisper.cpp.
-- ⚡ **Fast** — whisper.cpp v1.9.1 with Accelerate on Apple platforms;
+- ⚡ **Fast** — whisper.cpp v1.9.5 with Accelerate on Apple platforms;
   an 11-second clip transcribes in ~0.4 s with the `base` model on an
   Apple Silicon Mac.
 
@@ -49,7 +49,7 @@ on-device, no server, no API keys.
 
 ```yaml
 dependencies:
-  whisper_ggml: ^2.8.1
+  whisper_ggml: ^2.9.0
 ```
 
 Requires Dart 3.7+ (Flutter 3.29+). On iOS, set the deployment target to
@@ -258,5 +258,5 @@ Good to know:
   since ~2013). For very old CPUs, build with `-DWHISPER_GGML_AVX2=OFF`.
 - Android debug builds run the Dart layer in JIT mode; use `--release` for
   representative performance.
-- The bundled whisper.cpp v1.9.1 is roughly **15× faster** than the engine
+- The bundled whisper.cpp v1.9.5 is roughly **15× faster** than the engine
   in versions before 2.0.0.
