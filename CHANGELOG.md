@@ -1,3 +1,8 @@
+## 2.10.0
+
+* Swift Package Manager support on iOS and macOS ([#34](https://github.com/sk3llo/whisper_ggml/issues/34)). Apps with SPM enabled (the default since Flutter 3.44) now build the plugin as a Swift package instead of falling back to CocoaPods; CocoaPods keeps working. Both build the same sources with the same settings (C++20, `-O3`, Accelerate) into a dynamic `whisper-ggml` / `whisper_ggml` framework. The native sources moved from `ios/Classes` and `macos/Classes` to `ios/whisper_ggml/Sources/whisper_ggml` and `macos/whisper_ggml/Sources/whisper_ggml`, the layout SPM requires
+* Verified with SPM: end-to-end transcription on macOS and an unsigned iOS arm64 device build; with CocoaPods: the same macOS run and iOS build
+
 ## 2.9.0
 
 * Upgraded the vendored whisper.cpp from v1.9.1 to **v1.9.5** (ggml 0.26.0) on all five platforms. No API changes: transcripts, segment timestamps, VAD and diarization output are identical to 2.8.1 in side-by-side runs, and transcription is as fast or up to ~8% faster on x64 (Windows, Linux)
