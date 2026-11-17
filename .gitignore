@@ -11,3 +11,7 @@ Podfile.lock
 
 # Local session logs
 .recall/
+
+# SwiftPM build state for ios/whisper_ggml and macos/whisper_ggml
+.build/
+.swiftpm/

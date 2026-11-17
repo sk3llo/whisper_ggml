@@ -53,8 +53,11 @@ dependencies:
 ```
 
 Requires Dart 3.7+ (Flutter 3.29+). On iOS, set the deployment target to
-15.6 or later both in `ios/Podfile` (`platform :ios, '15.6'`) and in
-Xcode (Runner → General → Minimum Deployments).
+15.6 or later in Xcode (Runner → General → Minimum Deployments), and in
+`ios/Podfile` (`platform :ios, '15.6'`) if your app uses CocoaPods.
+
+On iOS and macOS the plugin supports both Swift Package Manager (the default
+since Flutter 3.44) and CocoaPods; Flutter picks whichever your app uses.
 
 ## Quick start
 
